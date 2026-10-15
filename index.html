@@ -48,7 +48,10 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 #dots i.ok{background:var(--pri2)}#dots i.cur{background:var(--pri);transform:scale(1.4)}
 #cerr{display:none;max-width:420px}
 .th{width:100%;background:center/cover;border-radius:12px;margin-bottom:8px}
-#cv{max-width:min(92%,420px);max-height:62vh;width:auto;height:auto;border-radius:10px;box-shadow:0 8px 40px #0004;cursor:pointer;object-fit:contain}
+#cw{position:relative;display:inline-block;line-height:0}
+#ov{position:absolute;inset:0;pointer-events:none}
+#ov button{position:absolute;pointer-events:auto;width:34px;height:34px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.6);color:#fff;font-size:14px;line-height:1;padding:0;cursor:pointer;transform:translate(-115%,15%)}
+#cv{max-width:min(92vw,420px);max-height:62vh;width:auto;height:auto;border-radius:10px;box-shadow:0 8px 40px #0004;cursor:pointer;object-fit:contain}
 .res{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:center}
 .float{position:absolute;font-size:44px;opacity:.5;animation:fl 6s ease-in-out infinite}
 @keyframes fl{50%{transform:translateY(-24px) rotate(10deg)}}
@@ -57,7 +60,8 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 .mod label{font-size:12px;color:var(--mut);margin-bottom:-6px}.mod input{max-width:none;text-align:left;padding:9px 12px}
 #mv{width:100%;border-radius:12px;background:#000}
 #pimg{display:none}
-@media print{@page{margin:0}body>*:not(#pimg){display:none!important}#pimg{display:block!important;width:100%;height:auto}html,body{overflow:visible;height:auto}}
+@media (max-width:640px){#hd{gap:8px;padding:8px 10px}#logo{font-size:16px}#steps{min-width:0;gap:4px}#steps b{width:22px;height:22px;font-size:11px}#bk{padding:6px 10px}}
+@media print{@page{margin:0}body>*:not(#pimg){display:none!important}#pimg{display:block!important;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:100vh;break-inside:avoid}html,body{overflow:visible;height:auto}}
 </style></head><body>
 <div id="app">
  <div id="hd"><button class="btn sm" id="bk" style="visibility:hidden">← Kembali</button><div id="logo">📸 <span id="evn"></span></div><div id="steps"></div></div>
@@ -80,8 +84,8 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
    <button class="btn pri big" id="go">Mulai!</button></section>
   <section class="scr"><h2>Suka hasilnya?</h2><div class="cards" id="rev"></div>
    <div class="nav"><button class="btn" id="all">🔄 Ulang semua</button><button class="btn pri" id="n4">Selesai ✓</button></div></section>
-  <section class="scr"><h2 id="rt">Foto kamu sudah jadi! 🎉</h2>
-   <div class="res"><canvas id="cv"></canvas>
+  <section class="scr"><h2 id="rt">Foto kamu sudah jadi! 🎉</h2><div class="mut" id="hint"></div>
+   <div class="res"><div id="cw"><canvas id="cv"></canvas><div id="ov"></div></div>
     <div style="max-width:280px;display:flex;flex-direction:column;gap:12px">
      <p class="mut">Scan QR di bagian bawah foto untuk melihat video BTS tiap foto.<br>Ketuk foto untuk memutar videonya.</p>
      <button class="btn pri" id="prt">🖨 Cetak</button><button class="btn" id="dpn">⬇ Simpan PNG</button><button class="btn" id="again">↺ Selesai / Mulai lagi</button>
@@ -100,7 +104,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 <script>
 const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234'};
+const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',strips:2,mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234'};
 try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}
 const LAY=[{n:1,c:1,ar:.75,name:'Single'},{n:2,c:1,ar:1.333,name:'Duo'},{n:3,c:1,ar:1.333,name:'Strip 3'},{n:4,c:2,ar:1,name:'Grid 4'},{n:4,c:1,ar:1.333,name:'Strip 4'},{n:6,c:2,ar:1,name:'Grid 6'}];
 const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:'Georgia, serif',stick:'💖✨',radius:18,border:6,gap:24,title:'Happy Moments'},
@@ -224,22 +228,24 @@ const compile=(s,cb)=>cchain=cchain.catch(()=>{}).then(async()=>{
  await Promise.race([c.compileImageTargets([im],p=>cb&&cb(p)),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout kompilasi')),180000))]);
  return new Blob([await c.exportData()],{type:'application/octet-stream'})});
 const printSrc=cv=>{if(!ST.tpl.slots)return cv.toDataURL('image/png');
- // kertas 4x6 inci (600 dpi): dua strip 2x6 inci, gambar dipas ke dalam tiap strip tanpa distorsi
- const c=document.createElement('canvas'),cw=1200,ch=3600;c.width=cw*2;c.height=ch;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
- const k=Math.min(cw/cv.width,ch/cv.height),w=cv.width*k,h=cv.height*k;[0,1].forEach(i=>g.drawImage(cv,i*cw+(cw-w)/2,(ch-h)/2,w,h));
+ // strip 2x6 inci (600 dpi). K.strips=2: dua strip kembar di kertas 4x6 (bawaan); K.strips=1: satu strip 2x6
+ const n=K.strips==1?1:2,c=document.createElement('canvas'),cw=1200,ch=3600;c.width=cw*n;c.height=ch;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+ const k=Math.min(cw/cv.width,ch/cv.height),w=cv.width*k,h=cv.height*k;for(let i=0;i<n;i++)g.drawImage(cv,i*cw+(cw-w)/2,(ch-h)/2,w,h);
  return c.toDataURL('image/jpeg',.95)};
 const blob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
 async function targetBlob(){const cv=$('#cv'),k=Math.min(1,1600/Math.max(cv.width,cv.height),Math.max(1000/Math.max(cv.width,cv.height),500/Math.min(cv.width,cv.height))),t=document.createElement('canvas');t.width=Math.round(cv.width*k);t.height=Math.round(cv.height*k);t.getContext('2d').drawImage(cv,0,0,t.width,t.height);return blob(t,'image/jpeg',.9)}
-$('#n4').onclick=async()=>{go(5);$('#rt').textContent=ST.nama?`Foto kamu sudah jadi, ${ST.nama}! 🎉`:'Foto kamu sudah jadi! 🎉';const cv=$('#cv');draw(cv);$('#pimg').src=printSrc(cv);
+$('#n4').onclick=async()=>{go(5);$('#rt').textContent=ST.nama?`Foto kamu sudah jadi, ${ST.nama}! 🎉`:'Foto kamu sudah jadi! 🎉';const cv=$('#cv');draw(cv);$('#pimg').src=printSrc(cv);buildOv();
  const s=ST;s.pack={manifest:manifest(),print:await blob(cv,'image/png'),target:await targetBlob()};LAST=s;
  s.pack.mindP=compile(s,p=>tg(s,'Menyiapkan video… '+Math.min(100,Math.round(p))+'%')).then(b=>{tg(s,'');return b}).catch(e=>{console.error(e);tg(s,'');return null});
  if(K.api){$('#up').textContent='Menyimpan…';Q.push(s);flush()}else $('#up').textContent=''};
 $('#prt').onclick=()=>window.print();
 $('#dpn').onclick=()=>$('#cv').toBlob(b=>dl(URL.createObjectURL(b),`photobooth_${ST.id}.png`));
 $('#again').onclick=reset;
+function playBts(i){if(!ST.vids[i]){$('#up').textContent='Slot '+(i+1)+' belum punya video BTS.';return}const mv=$('#mv');mv.src=ST.vids[i];mv.poster=ST.photos[i].src;$('#arm').classList.add('show');mv.play().catch(()=>{})}
+function buildOv(){const cv=$('#cv'),ov=$('#ov');ov.innerHTML='';rects.forEach((r,i)=>{if(!ST.vids[i])return;const b=document.createElement('button');b.textContent='▶';b.title='Putar video BTS';b.style.left=((r[0]+r[2])/cv.width*100)+'%';b.style.top=(r[1]/cv.height*100)+'%';b.onclick=e=>{e.stopPropagation();playBts(i)};ov.appendChild(b)});
+ $('#hint').textContent=ST.vids.some(Boolean)?'▶ Ketuk tombol putar di tiap foto untuk melihat video BTS-nya':'Video BTS tidak terekam di perangkat ini.'}
 $('#cv').onclick=e=>{const cv=$('#cv'),r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*cv.width/r.width,py=(e.clientY-r.top)*cv.height/r.height;
- const i=rects.findIndex(([a,b,w,h])=>px>=a&&px<=a+w&&py>=b&&py<=b+h);if(i<0)return;if(!ST.vids[i]){$('#up').textContent='Slot '+(i+1)+' belum punya video BTS.';return}
- const mv=$('#mv');mv.src=ST.vids[i];mv.poster=ST.photos[i].src;$('#arm').classList.add('show');mv.play().catch(()=>{})};
+ const i=rects.findIndex(([a,b,w,h])=>px>=a&&px<=a+w&&py>=b&&py<=b+h);if(i<0)return;playBts(i)};
 $('#mx').onclick=()=>{$('#arm').classList.remove('show');$('#mv').pause()};
 const manifest=(s=ST)=>{const cv=$('#cv'),W=cv.width,H=cv.height;return{v:2,id:s.id,qr_url:K.base+(K.base.includes('?')?'&':'?')+'id='+s.id,layout:s.lay.name,template:ST.tpl.name,cols:s.lay.c,print:{w:W,h:H,aspect:+(W/H).toFixed(5)},border:th().border||0,target:'target.jpg',
  slots:rects.map((r,i)=>({slot:i+1,x:+(r[0]/W).toFixed(5),y:+(r[1]/H).toFixed(5),w:+(r[2]/W).toFixed(5),h:+(r[3]/H).toFixed(5),ar:+(r[2]/r[3]).toFixed(4),photo:!!s.pb[i],video:!!s.vb[i],video_crop:s.raw&&s.raw[i]?'raw':'cell'}))}};
@@ -266,7 +272,7 @@ setInterval(flush,30000);
 const dl=(h,n)=>{const a=document.createElement('a');a.href=h;a.download=n;document.body.appendChild(a);a.click();a.remove()};
 
 // staff mode
-const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['pin','PIN staff','text']];
+const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['strips','Strip per lembar cetak (2 = kertas 4x6, 1 = strip 2x6)','number'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['pin','PIN staff','text']];
 AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</label><input id="a_${k}" type="${t}">`)});
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
 ['pointerup','pointerleave'].forEach(ev=>$('#logo').addEventListener(ev,()=>clearTimeout(press)));
