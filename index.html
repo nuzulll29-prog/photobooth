@@ -42,6 +42,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 .nav{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .cam{position:relative;border-radius:24px;overflow:hidden;background:#000;box-shadow:0 8px 40px #0004}
 .cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
+#cg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:3px dashed rgba(255,255,255,.9);box-shadow:0 0 0 9999px rgba(0,0,0,.45);border-radius:10px;pointer-events:none}
 #cd{position:absolute;inset:0;display:grid;place-items:center;font-size:min(30vw,200px);font-weight:800;color:#fff;text-shadow:0 4px 24px #000a;pointer-events:none}
 #fl{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .3s}
 #dots{display:flex;gap:10px;justify-content:center}#dots i{width:16px;height:16px;border-radius:50%;background:var(--line)}
@@ -78,7 +79,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
    <input type="text" id="ttl" maxlength="28" placeholder="Judul / nama (opsional)">
    <button class="btn pri" id="n2">Lanjut ke foto →</button></section>
   <section class="scr"><h2 id="pose">Siap bergaya?</h2>
-   <div class="cam" id="camb"><video id="v" playsinline muted></video><div id="cd"></div><div id="fl"></div></div>
+   <div class="cam" id="camb"><video id="v" playsinline muted></video><div id="cg"></div><div id="cd"></div><div id="fl"></div></div>
    <div id="dots"></div><div class="mut" id="cnt"></div>
    <div id="cerr"><p>Kamera tidak bisa diakses. Izinkan akses kamera di pengaturan Safari.</p><div class="nav"><button class="btn sm" id="retry">Coba lagi</button><button class="btn sm" id="demo">Mode demo</button></div></div>
    <button class="btn pri big" id="go">Mulai!</button></section>
@@ -187,12 +188,16 @@ async function cam(){$('#cerr').style.display='none';if(demo||stream)return true
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1280,height:960},audio:false});const v=$('#v');v.srcObject=stream;await v.play();return true}
  catch(e){$('#cerr').style.display='block';return false}}
 $('#retry').onclick=()=>cam();$('#demo').onclick=()=>{demo=true;$('#cerr').style.display='none'};
-const camBox=ar=>$('#camb').style.cssText=`aspect-ratio:${ar};width:min(92%,${(58*ar).toFixed(1)}vh)`;
+const CAMR=4/3; // rasio tampilan kamera (lebar), apa pun posisi HP/iPad
+const camBox=ar=>{$('#camb').style.cssText=`aspect-ratio:${CAMR};width:min(96%,${(58*CAMR).toFixed(1)}vh)`;
+ const g=$('#cg');if(ar>=CAMR){g.style.width='100%';g.style.height=(CAMR/ar*100)+'%'}else{g.style.height='100%';g.style.width=(ar/CAMR*100)+'%'}};
+// area 4:3 di tengah frame kamera (kalau kamera tegak/portrait, dipotong jadi lebar)
+function lRect(v){const iw=v.videoWidth,ih=v.videoHeight;let w=iw,h=iw/CAMR;if(h>ih){h=ih;w=ih*CAMR}return{x:(iw-w)/2,y:(ih-h)/2,w,h}}
 function goShoot(idx){ST.todo=idx;ST.cur=-1;go(3);camBox(sar(idx[0]));
  $('#pose').textContent=idx.length>1?'Siap bergaya?':'Foto ulang slot '+(idx[0]+1);$('#cd').textContent='';$('#go').style.display='';dots();cam()}
 function dots(){$('#dots').innerHTML=Array.from({length:ST.lay.n},(_,j)=>`<i class="${ST.photos[j]?'ok':''} ${j==ST.cur?'cur':''}"></i>`).join('');$('#cnt').textContent=busy&&ST.cur>=0?`Foto ${ST.cur+1} dari ${ST.lay.n}`:''}
 const setPhoto=(i,u)=>new Promise(r=>{const im=new Image();im.onload=()=>{ST.photos[i]=im;r()};im.src=u});
-function cropDraw(g,v,w,h,mir){const iw=v.videoWidth,ih=v.videoHeight,s=Math.max(w/iw,h/ih),sw=w/s,sh=h/s;g.save();if(mir){g.translate(w,0);g.scale(-1,1)}g.drawImage(v,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,w,h);g.restore()}
+function cropDraw(g,v,w,h,mir){const r=lRect(v),k=Math.max(w/r.w,h/r.h),sw=w/k,sh=h/k;g.save();if(mir){g.translate(w,0);g.scale(-1,1)}g.drawImage(v,r.x+(r.w-sw)/2,r.y+(r.h-sh)/2,sw,sh,0,0,w,h);g.restore()}
 async function one(i){
  const mt=!demo&&window.MediaRecorder&&['video/mp4','video/webm;codecs=vp9','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
  let rec,ch=[],on=false;ST.vids[i]=ST.vb[i]=null;ST.raw=ST.raw||[];ST.raw[i]=false;
@@ -205,7 +210,7 @@ async function one(i){
  $('#cd').textContent='';$('#fl').style.opacity=1;setTimeout(()=>$('#fl').style.opacity=0,150);
  const c=document.createElement('canvas'),g=c.getContext('2d');
  if(demo){c.width=800;c.height=600;const gr=g.createLinearGradient(0,0,800,600);gr.addColorStop(0,`hsl(${Math.random()*360},80%,70%)`);gr.addColorStop(1,`hsl(${Math.random()*360},80%,60%)`);g.fillStyle=gr;g.fillRect(0,0,800,600);g.font='220px serif';g.textAlign='center';g.fillText(['😎','🥳','😍','🤩','😜'][i%5],400,380)}
- else{const v=$('#v');c.width=v.videoWidth;c.height=v.videoHeight;g.translate(c.width,0);g.scale(-1,1);g.drawImage(v,0,0)}
+ else{const v=$('#v'),r=lRect(v);c.width=Math.round(r.w);c.height=Math.round(r.h);g.translate(c.width,0);g.scale(-1,1);g.drawImage(v,r.x,r.y,r.w,r.h,0,0,c.width,c.height)}
  const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.92));ST.pb[i]=b;await setPhoto(i,URL.createObjectURL(b));dots();await sleep(1100);
  if(rec){await new Promise(r=>{rec.onstop=r;rec.stop()});on=false;const vb=new Blob(ch,{type:mt.split(';')[0]});ST.vb[i]=vb;ST.vids[i]=URL.createObjectURL(vb);ST.ex[i]=mt.includes('mp4')?'mp4':'webm'}}
 $('#go').onclick=async()=>{if(busy||!await cam())return;busy=true;$('#go').style.display='none';$('#bk').style.visibility='hidden';
