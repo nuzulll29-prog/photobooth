@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Video BTS</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif;color:#fff}
+#c{position:fixed;inset:0}
+#ld{position:fixed;inset:0;z-index:9;display:grid;place-content:center;gap:16px;text-align:center;padding:24px;background:#1b1217}
+button{font:inherit;font-weight:700;border:0;border-radius:99px;padding:14px 28px;background:#e0457b;color:#fff}
+#ui{position:fixed;left:0;right:0;bottom:0;z-index:5;display:none;gap:8px;justify-content:center;align-items:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0));pointer-events:none}
+#msg{background:#000a;padding:10px 16px;border-radius:99px;font-size:15px}
+#snd{pointer-events:auto;padding:10px 14px;background:#000a}
+</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.150.1/build/three.module.js","mindar-image-three":"https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-three.prod.js"}}</script>
+</head><body>
+<div id="c"></div>
+<div id="ld"><div id="lt" style="font-size:18px">Menyiapkan video AR…</div><button id="go" style="display:none">Mulai</button></div>
+<div id="ui"><div id="msg">Arahkan kamera ke foto cetakmu</div><button id="snd">🔇</button></div>
+<script type="module">
+import * as THREE from 'three';
+import {MindARThree} from 'mindar-image-three';
+const API='https://photobooth-api.nuzulll-29.workers.dev'; // URL Worker kamu, tanpa garis miring di akhir
+const $=s=>document.querySelector(s),T=t=>$('#lt').textContent=t;
+const id=new URLSearchParams(location.search).get('id')||'';
+const base=`${API}/photobooth/pub/${id}`;
+(async()=>{try{
+ if(!/^[\w-]+$/.test(id))return T('Link tidak valid. Scan ulang QR di cetakanmu.');
+ const r=await fetch(base+'/manifest.json');if(!r.ok)return T('Foto tidak ditemukan. Scan ulang QR di cetakanmu.');
+ const m=await r.json(),A=m.print.aspect,tm=base+'/target.mind';
+ if(!(await fetch(tm,{method:'HEAD'})).ok)return T('Video masih diproses. Coba lagi dalam 1–2 menit ya.');
+ const mind=new MindARThree({container:$('#c'),imageTargetSrc:tm,uiLoading:'no',uiScanning:'no',uiError:'no'});
+ const {renderer,scene,camera}=mind,anchor=mind.addAnchor(0),vids=[];
+ for(const s of m.slots){if(!s.video)continue;
+  const v=document.createElement('video');v.crossOrigin='anonymous';v.loop=true;v.muted=true;v.playsInline=true;v.preload='auto';
+  let ext=['mp4','webm'];const nx=()=>{const e=ext.shift();if(e)v.src=`${base}/bts-${s.slot}.${e}`};v.onerror=nx;nx();
+  const tx=new THREE.VideoTexture(v);tx.encoding=THREE.sRGBEncoding;
+  v.onloadedmetadata=()=>{const va=v.videoWidth/v.videoHeight; // cover-fit ke ukuran slot
+   if(va>s.ar){tx.repeat.x=s.ar/va;tx.offset.x=(1-s.ar/va)/2}else{tx.repeat.y=va/s.ar;tx.offset.y=(1-va/s.ar)/2}};
+  const pl=new THREE.Mesh(new THREE.PlaneGeometry(s.w,s.h/A),new THREE.MeshBasicMaterial({map:tx,toneMapped:false}));
+  pl.position.set(s.x+s.w/2-.5,(.5-(s.y+s.h/2))/A,.002);anchor.group.add(pl);vids.push(v)}
+ anchor.onTargetFound=()=>{vids.forEach(v=>v.play().catch(()=>{}));$('#msg').textContent='Memutar video BTS ✨'};
+ anchor.onTargetLost=()=>{vids.forEach(v=>v.pause());$('#msg').textContent='Arahkan kamera ke foto cetakmu'};
+ $('#snd').onclick=()=>{const on=vids[0]&&vids[0].muted;vids.forEach(v=>v.muted=!on);$('#snd').textContent=on?'🔊':'🔇'};
+ T('Siap!');$('#go').style.display='';
+ $('#go').onclick=async()=>{try{
+  vids.forEach(v=>v.play().then(()=>v.pause()).catch(()=>{})); // buka izin putar lewat sentuhan
+  await mind.start();renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+  $('#ld').style.display='none';$('#ui').style.display='flex'}catch(e){T('Kamera tidak bisa dibuka. Izinkan akses kamera lalu muat ulang.');$('#go').style.display='none'}}
+}catch(e){T('Terjadi kesalahan: '+e.message)}})();
+</script></body></html>
