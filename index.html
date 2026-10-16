@@ -105,7 +105,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 <script>
 const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234'};
+const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000};
 try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}
 const LAY=[{n:1,c:1,ar:.75,name:'Single'},{n:2,c:1,ar:1.333,name:'Duo'},{n:3,c:1,ar:1.333,name:'Strip 3'},{n:4,c:2,ar:1,name:'Grid 4'},{n:4,c:1,ar:1.333,name:'Strip 4'},{n:6,c:2,ar:1,name:'Grid 6'}];
 const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:'Georgia, serif',stick:'💖✨',radius:18,border:6,gap:24,title:'Happy Moments'},
@@ -239,7 +239,7 @@ const printSrc=cv=>{if(!ST.tpl.slots)return cv.toDataURL('image/png');
  const k=Math.min(pw/cv.width,ph/cv.height),w=cv.width*k,h=cv.height*k;g.drawImage(cv,(pw-w)/2,(ph-h)/2,w,h);
  return c.toDataURL('image/jpeg',.95)};
 const blob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
-async function targetBlob(){const cv=$('#cv'),k=Math.min(1,1600/Math.max(cv.width,cv.height),Math.max(1000/Math.max(cv.width,cv.height),500/Math.min(cv.width,cv.height))),t=document.createElement('canvas');t.width=Math.round(cv.width*k);t.height=Math.round(cv.height*k);t.getContext('2d').drawImage(cv,0,0,t.width,t.height);return blob(t,'image/jpeg',.9)}
+async function targetBlob(){const cv=$('#cv'),k=Math.min(1,(K.tgt||1000)/Math.max(cv.width,cv.height)),t=document.createElement('canvas');t.width=Math.round(cv.width*k);t.height=Math.round(cv.height*k);t.getContext('2d').drawImage(cv,0,0,t.width,t.height);return blob(t,'image/jpeg',.9)}
 $('#n4').onclick=async()=>{go(5);$('#rt').textContent=ST.nama?`Foto kamu sudah jadi, ${ST.nama}! 🎉`:'Foto kamu sudah jadi! 🎉';const cv=$('#cv');draw(cv);$('#pimg').src=printSrc(cv);buildOv();
  const s=ST;s.pack={manifest:manifest(),print:await blob(cv,'image/png'),target:await targetBlob()};LAST=s;
  s.pack.mindP=compile(s,p=>tg(s,'Menyiapkan video… '+Math.min(100,Math.round(p))+'%')).then(b=>{tg(s,'');return b}).catch(e=>{console.error(e);tg(s,'');return null});
@@ -269,16 +269,19 @@ async function upload(s){const say=t=>{if(s===ST)$('#up').textContent=t};say('Me
  await put(s,'print.png',s.pack.print);await put(s,'target.jpg',s.pack.target);
  for(let i=0;i<s.lay.n;i++)if(s.pb[i])await put(s,`foto-${i+1}.jpg`,s.pb[i]);
  for(let i=0;i<s.lay.n;i++)if(s.vb[i])await sendVideo(s,i);
- const mb=await s.pack.mindP;if(mb)await put(s,'target.mind',mb);
- await jpost('/photobooth/finish',{id:s.id,target:mb?'ready':'failed'});say('Tersimpan ✓')}
+ FQ.push(s);ffl();say('Foto tersimpan ✓ · video AR sedang disiapkan…')}
 async function flush(){if(flushing||!K.api)return;flushing=true;
  for(const s of [...Q]){try{await upload(s);Q.splice(Q.indexOf(s),1)}catch(e){if(s===ST)$('#up').textContent='Belum terkirim — dicoba lagi otomatis';break}}
  flushing=false}
-setInterval(flush,30000);
+// target.mind + finish jalan terpisah: upload sesi berikutnya tidak menunggu kompilasi sesi sebelumnya
+const FQ=[];let fb=false;
+async function fin(s){const mb=await s.pack.mindP;if(mb)await put(s,'target.mind',mb);await jpost('/photobooth/finish',{id:s.id,target:mb?'ready':'failed'})}
+async function ffl(){if(fb)return;fb=true;for(const s of [...FQ]){try{await fin(s);FQ.splice(FQ.indexOf(s),1);if(s===ST)$('#up').textContent='Tersimpan ✓ · video AR siap'}catch(e){break}}fb=false}
+setInterval(flush,30000);setInterval(ffl,30000);
 const dl=(h,n)=>{const a=document.createElement('a');a.href=h;a.download=n;document.body.appendChild(a);a.click();a.remove()};
 
 // staff mode
-const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['cm34','Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)','text'],['cm6','Ukuran cetak 6 grid (cm, lebar x tinggi)','text'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['pin','PIN staff','text']];
+const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['cm34','Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)','text'],['cm6','Ukuran cetak 6 grid (cm, lebar x tinggi)','text'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['tgt','Resolusi target AR (sisi panjang px, 800-1500; kecil = kompilasi lebih cepat)','number'],['pin','PIN staff','text']];
 AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</label><input id="a_${k}" type="${t}">`)});
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
 ['pointerup','pointerleave'].forEach(ev=>$('#logo').addEventListener(ev,()=>clearTimeout(press)));
