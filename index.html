@@ -62,7 +62,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 #mv{width:100%;border-radius:12px;background:#000}
 #pimg{display:none}
 @media (max-width:640px){#hd{gap:8px;padding:8px 10px}#logo{font-size:16px}#steps{min-width:0;gap:4px}#steps b{width:22px;height:22px;font-size:11px}#bk{padding:6px 10px}}
-@media print{@page{margin:0}body>*:not(#pimg){display:none!important}#pimg{display:block!important;margin:0 auto;width:auto;height:auto;max-width:100%;max-height:100vh;break-inside:avoid}html,body{overflow:visible;height:auto}}
+@media print{@page{margin:0}html,body{margin:0!important;padding:0!important;height:100%!important;overflow:hidden!important}body>*:not(#pimg){display:none!important}#pimg{display:block!important;position:fixed;inset:0;width:100%;height:100%;object-fit:contain}}
 </style></head><body>
 <div id="app">
  <div id="hd"><button class="btn sm" id="bk" style="visibility:hidden">← Kembali</button><div id="logo">📸 <span id="evn"></span></div><div id="steps"></div></div>
@@ -105,7 +105,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 <script>
 const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',strips:2,mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234'};
+const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234'};
 try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}
 const LAY=[{n:1,c:1,ar:.75,name:'Single'},{n:2,c:1,ar:1.333,name:'Duo'},{n:3,c:1,ar:1.333,name:'Strip 3'},{n:4,c:2,ar:1,name:'Grid 4'},{n:4,c:1,ar:1.333,name:'Strip 4'},{n:6,c:2,ar:1,name:'Grid 6'}];
 const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:'Georgia, serif',stick:'💖✨',radius:18,border:6,gap:24,title:'Happy Moments'},
@@ -114,8 +114,8 @@ const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:
 {name:'Biru Pastel',bg:'#e8f3ff',accent:'#4a8fe7',text:'#1f3b63',font:"'Trebuchet MS', sans-serif",stick:'☁️⭐',radius:26,border:6,gap:24,title:'Sweet Day'},
 {name:'Hijau Sage',bg:'#eef3e6',accent:'#6b8f4e',text:'#34472a',font:'Georgia, serif',stick:'🌿🌼',radius:20,border:5,gap:22,title:'Garden Party'},
 {name:'Hitam Emas',bg:'#16130d',accent:'#d4af37',text:'#f3e6b8',font:'Georgia, serif',stick:'⭐✨',radius:10,border:6,gap:22,title:'Golden Night'},
-{name:'Santri Hijau',img:'templates/hijau-3.png',W:1011,H:2280,c:1,slots:[[228,621,609,335],[179,1022,657,334],[179,1421,620,334]],qr:[412,1916,189]},
-{name:'Santri Toska',img:'templates/toska-3.png',W:1011,H:2220,c:1,slots:[[186,403,651,297],[186,761,650,292],[186,1115,651,317]],qr:[410,1682,194]},
+{name:'Santri Hijau',img:'templates/santri-hijau.png',W:507,H:1536,c:1,slots:[[68,364,375,216],[67,617,376,216],[68,870,376,205]],qr:[196,1182,134]},
+{name:'Santri Biru',img:'templates/santri-biru.png',W:504,H:1536,c:1,slots:[[46,356,388,222],[52,617,385,214],[55,875,384,208]],qr:[184,1192,127]},
 {name:'Santri Hijau',img:'templates/hijau-4.png',W:942,H:2280,c:1,slots:[[196,565,568,272],[194,887,569,276],[193,1211,569,289],[193,1555,570,270]],qr:[385,1960,165]},
 {name:'Santri Toska',img:'templates/toska-4.png',W:942,H:2220,c:1,slots:[[249,427,520,213],[190,702,579,229],[189,995,579,233],[189,1289,520,217]],qr:[366,1682,195]},
 {name:'Santri Hijau',img:'templates/hijau-6.png',W:1005,H:2280,c:2,slots:[[115,577,353,335],[520,577,354,335],[115,955,353,336],[520,955,354,336],[115,1333,353,331],[520,1333,354,331]],qr:[404,1853,172]},
@@ -232,10 +232,12 @@ const compile=(s,cb)=>cchain=cchain.catch(()=>{}).then(async()=>{
  const c=new MINDAR.IMAGE.Compiler();
  await Promise.race([c.compileImageTargets([im],p=>cb&&cb(p)),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout kompilasi')),180000))]);
  return new Blob([await c.exportData()],{type:'application/octet-stream'})});
+// ukuran cetak (cm) diatur di mode staf: bawaan 5x15 untuk semua layout (strip 2x6 inci). Gambar dipas ke lembar tanpa distorsi.
+const parseCm=v=>{const m=String(v||'').replace(/,/g,'.').match(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)/i);return m&&+m[1]>=2&&+m[2]>=2&&+m[1]<=40&&+m[2]<=40?[+m[1],+m[2]]:null};
+const cmOf=T=>T.cm||parseCm(T.slots.length>=6?K.cm6:K.cm34)||[5,15];
 const printSrc=cv=>{if(!ST.tpl.slots)return cv.toDataURL('image/png');
- // strip 2x6 inci (600 dpi). K.strips=2: dua strip kembar di kertas 4x6 (bawaan); K.strips=1: satu strip 2x6
- const n=K.strips==1?1:2,c=document.createElement('canvas'),cw=1200,ch=3600;c.width=cw*n;c.height=ch;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
- const k=Math.min(cw/cv.width,ch/cv.height),w=cv.width*k,h=cv.height*k;for(let i=0;i<n;i++)g.drawImage(cv,i*cw+(cw-w)/2,(ch-h)/2,w,h);
+ const [a,b]=cmOf(ST.tpl),d=Math.min(600,Math.floor(Math.sqrt(12e6/(a*b))*2.54)),pw=Math.round(a/2.54*d),ph=Math.round(b/2.54*d),c=document.createElement('canvas');c.width=pw;c.height=ph;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,pw,ph);
+ const k=Math.min(pw/cv.width,ph/cv.height),w=cv.width*k,h=cv.height*k;g.drawImage(cv,(pw-w)/2,(ph-h)/2,w,h);
  return c.toDataURL('image/jpeg',.95)};
 const blob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
 async function targetBlob(){const cv=$('#cv'),k=Math.min(1,1600/Math.max(cv.width,cv.height),Math.max(1000/Math.max(cv.width,cv.height),500/Math.min(cv.width,cv.height))),t=document.createElement('canvas');t.width=Math.round(cv.width*k);t.height=Math.round(cv.height*k);t.getContext('2d').drawImage(cv,0,0,t.width,t.height);return blob(t,'image/jpeg',.9)}
@@ -252,7 +254,7 @@ function buildOv(){const cv=$('#cv'),ov=$('#ov');ov.innerHTML='';rects.forEach((
 $('#cv').onclick=e=>{const cv=$('#cv'),r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*cv.width/r.width,py=(e.clientY-r.top)*cv.height/r.height;
  const i=rects.findIndex(([a,b,w,h])=>px>=a&&px<=a+w&&py>=b&&py<=b+h);if(i<0)return;playBts(i)};
 $('#mx').onclick=()=>{$('#arm').classList.remove('show');$('#mv').pause()};
-const manifest=(s=ST)=>{const cv=$('#cv'),W=cv.width,H=cv.height;return{v:2,id:s.id,qr_url:K.base+(K.base.includes('?')?'&':'?')+'id='+s.id,layout:s.lay.name,template:ST.tpl.name,cols:s.lay.c,print:{w:W,h:H,aspect:+(W/H).toFixed(5)},border:th().border||0,target:'target.jpg',
+const manifest=(s=ST)=>{const cv=$('#cv'),W=cv.width,H=cv.height;return{v:2,id:s.id,qr_url:K.base+(K.base.includes('?')?'&':'?')+'id='+s.id,layout:s.lay.name,template:ST.tpl.name,cols:s.lay.c,print:{w:W,h:H,aspect:+(W/H).toFixed(5),cm:ST.tpl.slots?cmOf(ST.tpl):null},border:th().border||0,target:'target.jpg',
  slots:rects.map((r,i)=>({slot:i+1,x:+(r[0]/W).toFixed(5),y:+(r[1]/H).toFixed(5),w:+(r[2]/W).toFixed(5),h:+(r[3]/H).toFixed(5),ar:+(r[2]/r[3]).toFixed(4),photo:!!s.pb[i],video:!!s.vb[i],video_crop:s.raw&&s.raw[i]?'raw':'cell'}))}};
 // upload: kiosk -> Worker (R2/Supabase), video -> Cloudinary (kompres) -> webhook Worker -> R2
 const rt=async(fn,n=3)=>{for(let k=1;;k++){try{return await fn()}catch(e){if(e.stop||k>=n)throw e;await sleep(1500*k)}}};
@@ -277,7 +279,7 @@ setInterval(flush,30000);
 const dl=(h,n)=>{const a=document.createElement('a');a.href=h;a.download=n;document.body.appendChild(a);a.click();a.remove()};
 
 // staff mode
-const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['strips','Strip per lembar cetak (2 = kertas 4x6, 1 = strip 2x6)','number'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['pin','PIN staff','text']];
+const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['cm34','Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)','text'],['cm6','Ukuran cetak 6 grid (cm, lebar x tinggi)','text'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['pin','PIN staff','text']];
 AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</label><input id="a_${k}" type="${t}">`)});
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
 ['pointerup','pointerleave'].forEach(ev=>$('#logo').addEventListener(ev,()=>clearTimeout(press)));
