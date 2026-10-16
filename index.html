@@ -224,8 +224,7 @@ $('#all').onclick=()=>goShoot([...Array(ST.lay.n).keys()]);
 // kompilasi target.mind di iPad (latar belakang, satu per satu). Versi library harus SAMA dengan viewer.
 let mindP,cchain=Promise.resolve();
 const tg=(s,t)=>{if(s===ST)$('#tg').textContent=t};
-const loadMind=()=>mindP||(mindP=new Promise((res,rej)=>{if(window.MINDAR&&MINDAR.IMAGE&&MINDAR.IMAGE.Compiler)return res();
- const sc=document.createElement('script');sc.src=K.mind;sc.onload=()=>window.MINDAR&&MINDAR.IMAGE&&MINDAR.IMAGE.Compiler?res():rej(new Error('Compiler tidak ada di library'));sc.onerror=()=>rej(new Error('library gagal dimuat'));document.head.appendChild(sc)}).catch(e=>{mindP=null;throw e}));
+const loadMind=()=>mindP||(mindP=(window.MINDAR&&MINDAR.IMAGE&&MINDAR.IMAGE.Compiler?Promise.resolve():import(K.mind)).then(()=>{if(!(window.MINDAR&&MINDAR.IMAGE&&MINDAR.IMAGE.Compiler))throw new Error('Compiler tidak ada di library')}).catch(e=>{mindP=null;throw e}));
 const compile=(s,cb)=>cchain=cchain.catch(()=>{}).then(async()=>{
  await loadMind();
  const im=new Image();await new Promise((r,j)=>{im.onload=r;im.onerror=j;im.src=URL.createObjectURL(s.pack.target)});
