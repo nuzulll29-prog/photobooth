@@ -12,7 +12,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 'Bricolage Grot
 .w{max-width:520px;margin:0 auto;padding:14px 16px}
 h1{font-size:22px;margin:4px 0 14px;font-weight:800}h2{font-size:15px;margin:18px 0 8px;font-weight:700}
 label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
-input,textarea{width:100%;font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg)}
+input,textarea,select{width:100%;font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg)}
 input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
 button{font:inherit;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:12px;padding:11px 16px;cursor:pointer}
 button.p{background:var(--pri);border-color:var(--pri);color:#fff}button.s{padding:7px 12px;font-size:14px}
@@ -65,7 +65,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <h2>Perangkat ini</h2><label>URL Worker</label><input id="l_api" autocapitalize="none"><label>Kunci kiosk (hanya disimpan di perangkat ini)</label><input id="l_key" type="password"><label>Awalan kode order (1–2 huruf; beda untuk tiap kasir)</label><input id="l_pfx" maxlength="2" placeholder="A" autocapitalize="characters"><label>Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)</label><input id="l_cm" placeholder="5x15"><label>Ukuran cetak 6 grid (cm, lebar x tinggi)</label><input id="l_cm6" placeholder="5x15"><br><br>
 <button class="p" id="ss" style="width:100%">Simpan pengaturan</button><br><br><button id="lo" style="width:100%">Keluar</button></div>
 
-<div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak. Foto disusun rapi di A4 dengan ukuran asli, tanpa diperbesar atau diperkecil.</p><div id="cl"></div>
+<div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak. Foto disusun rapi di A4 dengan ukuran asli, tanpa diperbesar atau diperkecil.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div>
 <label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
 <div class="pg w" id="p4"><h1>Antrean AR</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Perangkat ini menyiapkan file pelacak (target.mind) di belakang layar, jadi kiosk tidak perlu menunggu. Biarkan aplikasi tetap terbuka.</p>
 <label style="display:flex;gap:8px;align-items:center"><input id="ao" class="ck" type="checkbox" checked>Proses otomatis</label><div id="ast" class="od" style="margin:10px 0"></div><div id="al"></div></div>
@@ -136,8 +136,8 @@ async function sendTo(o,via){if(!navigator.onLine)return toast('Butuh internet u
 let LC={};try{LC=JSON.parse(localStorage.pbl||'{}')}catch(e){}
 let CO=[],PO=[];
 const cmP=v=>{const m=String(v||'').replace(/,/g,'.').match(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)/i);return m?[+m[1],+m[2]]:null};
-async function loadC(){if(!navigator.onLine){$('#cl').innerHTML='<p style="color:var(--mut)">Cetak A4 butuh internet.</p>';return}const d=new Date();d.setHours(0,0,0,0);const {data}=await sb.from('orders').select('*').gte('created_at',d.toISOString()).order('created_at',{ascending:false});CO=data||[];
- $('#cl').innerHTML=CO.length?CO.map(o=>`<div class="cp"><input type="checkbox" data-i="${o.id}" ${o.printed||o.status!='lunas'?'':'checked'}><b>${esc(o.code)}<br><span style="font-weight:400;font-size:13px;color:var(--mut)">${esc(o.nama)}${o.printed?' · sudah dicetak':''}${o.status!='lunas'?' · belum bayar':''}</span></b><input type="number" min="1" value="${o.prints}" data-n="${o.id}"></div>`).join(''):'<p style="color:var(--mut)">Belum ada pesanan hari ini.</p>'}
+async function loadC(){if(!navigator.onLine){$('#cl').innerHTML='<p style="color:var(--mut)">Cetak A4 butuh internet.</p>';return}const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(+$('#cr').value||0));const {data}=await sb.from('orders').select('*').gte('created_at',d.toISOString()).order('created_at',{ascending:false});CO=data||[];
+ $('#cl').innerHTML=CO.length?CO.map(o=>`<div class="cp"><input type="checkbox" data-i="${o.id}" ${o.printed||o.status!='lunas'?'':'checked'}><b>${esc(o.code)}<br><span style="font-weight:400;font-size:13px;color:var(--mut)">${new Date(o.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'})} · ${esc(o.nama)}${o.printed?' · sudah dicetak':''}${o.status!='lunas'?' · belum bayar':''}</span></b><input type="number" min="1" value="${o.prints}" data-n="${o.id}"></div>`).join(''):'<p style="color:var(--mut)">Belum ada pesanan pada rentang ini.</p>'}
 // susun rapi per baris (shelf) di A4, ukuran asli dalam mm, boleh diputar 90 derajat
 function pack(its,rot){const PW=210,PH=297,M=5,G=3,pg=[];
  const ors=t=>rot&&t.w!=t.h?[{w:t.w,h:t.h,r:0},{w:t.h,h:t.w,r:1}]:[{w:t.w,h:t.h,r:0}];
@@ -148,6 +148,7 @@ function pack(its,rot){const PW=210,PH=297,M=5,G=3,pg=[];
  for(const t of its)if(!pg.some(p=>fit(p,t))){const p={it:[],sh:[],y:M};pg.push(p);if(!fit(p,t))return null}
  pg.forEach(p=>p.it.forEach(i=>{i.x+=(PW-(i.sh.x-G-M))/2-M}));return pg}
 const sheetHtml=(pg,gd)=>pg.map(p=>`<div class="A4">${p.it.map(i=>`<div class="it" style="left:${i.x}mm;top:${i.y}mm;width:${i.w}mm;height:${i.h}mm;${gd?'outline:.2mm solid #aaa;outline-offset:1mm':''}"><img src="${i.src}" style="${i.r?`position:absolute;left:50%;top:50%;width:${i.h}mm;height:${i.w}mm;transform:translate(-50%,-50%) rotate(90deg)`:'width:100%;height:100%'}"></div>`).join('')}</div>`).join('');
+$('#cr').onchange=loadC;
 $('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur');
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
  toast('Menyusun…');const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
