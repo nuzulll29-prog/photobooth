@@ -10,12 +10,13 @@ button{font:inherit;font-weight:700;border:0;border-radius:99px;padding:14px 28p
 #msg{background:#000a;padding:10px 16px;border-radius:99px;font-size:15px}
 #snd{pointer-events:auto;padding:10px 14px;background:#000a}
 </style>
-<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.150.1/build/three.module.js","mindar-image-three":"https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-three.prod.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.147.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.147.0/examples/jsm/","mindar-image-three":"https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-three.prod.js"}}</script>
+<script>setTimeout(function(){var t=document.getElementById('lt');if(t&&t.textContent.indexOf('Menyiapkan')==0)t.textContent='Library AR gagal dimuat. Cek koneksi lalu muat ulang halaman.'},15000)</script>
 </head><body>
 <div id="c"></div>
 <div id="ld"><div id="lt" style="font-size:18px">Menyiapkan video AR…</div><button id="go" style="display:none">Mulai</button></div>
 <div id="ui"><div id="msg">Arahkan kamera ke foto cetakmu</div><button id="snd">🔇</button></div>
-<script type="module">
+<script type="module" onerror="document.getElementById('lt').textContent='Library AR gagal dimuat. Cek koneksi lalu muat ulang.'">
 import * as THREE from 'three';
 import {MindARThree} from 'mindar-image-three';
 const API='https://photobooth-api.nuzulll-29.workers.dev'; // URL Worker kamu, tanpa garis miring di akhir
