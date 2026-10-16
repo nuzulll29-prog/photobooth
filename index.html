@@ -105,7 +105,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 <script>
 const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000};
+const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000,cmode:'kasir'};
 try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}
 const LAY=[{n:1,c:1,ar:.75,name:'Single'},{n:2,c:1,ar:1.333,name:'Duo'},{n:3,c:1,ar:1.333,name:'Strip 3'},{n:4,c:2,ar:1,name:'Grid 4'},{n:4,c:1,ar:1.333,name:'Strip 4'},{n:6,c:2,ar:1,name:'Grid 6'}];
 const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:'Georgia, serif',stick:'💖✨',radius:18,border:6,gap:24,title:'Happy Moments'},
@@ -242,8 +242,8 @@ const blob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
 async function targetBlob(){const cv=$('#cv'),k=Math.min(1,(K.tgt||1000)/Math.max(cv.width,cv.height)),t=document.createElement('canvas');t.width=Math.round(cv.width*k);t.height=Math.round(cv.height*k);t.getContext('2d').drawImage(cv,0,0,t.width,t.height);return blob(t,'image/jpeg',.9)}
 $('#n4').onclick=async()=>{go(5);$('#rt').textContent=ST.nama?`Foto kamu sudah jadi, ${ST.nama}! 🎉`:'Foto kamu sudah jadi! 🎉';const cv=$('#cv');draw(cv);$('#pimg').src=printSrc(cv);buildOv();
  const s=ST;s.pack={manifest:manifest(),print:await blob(cv,'image/png'),target:await targetBlob()};LAST=s;
- s.pack.mindP=compile(s,p=>tg(s,'Menyiapkan video… '+Math.min(100,Math.round(p))+'%')).then(b=>{tg(s,'');return b}).catch(e=>{console.error(e);tg(s,'');return null});
- if(K.api){$('#up').textContent='Menyimpan…';Q.push(s);flush()}else $('#up').textContent=''};
+ s.pack.defer=K.cmode!=='kiosk';s.pack.mindP=s.pack.defer?Promise.resolve(null):compile(s,p=>tg(s,'Menyiapkan video… '+Math.min(100,Math.round(p))+'%')).then(b=>{tg(s,'');return b}).catch(e=>{console.error(e);tg(s,'');return null});
+ if(K.api){$('#up').textContent=navigator.onLine?'Menyimpan…':'Tersimpan di perangkat — diunggah otomatis saat online';jsave(s);Q.push(s);flush()}else $('#up').textContent=''};
 $('#prt').onclick=()=>window.print();
 $('#dpn').onclick=()=>$('#cv').toBlob(b=>dl(URL.createObjectURL(b),`photobooth_${ST.id}.png`));
 $('#again').onclick=reset;
@@ -264,24 +264,35 @@ async function sendVideo(s,i){
  try{const g=await jpost('/photobooth/video-sign',{id:s.id,slot:i+1}),f=new FormData();Object.entries(g.fields).forEach(([k,v])=>f.append(k,v));f.append('file',s.vb[i],'bts-'+(i+1));
   const r=await fetch(g.url,{method:'POST',body:f});if(!r.ok)throw new Error('cld '+r.status)}
  catch(e){await put(s,`bts-${i+1}.${s.ex[i]}`,s.vb[i])}}
+// ===== mode offline: antrean disimpan di penyimpanan perangkat (IndexedDB), tahan tutup tab/mati listrik =====
+const idb=new Promise((res,rej)=>{const r=indexedDB.open('pbq',1);r.onupgradeneeded=()=>r.result.createObjectStore('j',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const jtx=(m,f)=>idb.then(d=>new Promise((res,rej)=>{const t=d.transaction('j',m),o=f(t.objectStore('j'));t.oncomplete=()=>res(o.result);t.onerror=()=>rej(t.error)}));
+const jsave=s=>jtx('readwrite',o=>o.put({id:s.id,nama:s.nama,manifest:s.pack.manifest,print:s.pack.print,target:s.pack.target,pb:s.pb,vb:s.vb,ex:s.ex,n:s.lay.n,done:s.done||{}})).catch(console.error);
+const jdel=id=>jtx('readwrite',o=>o.delete(id)).catch(()=>{});
+const jall=()=>jtx('readonly',o=>o.getAll());
+const st=async(s,key,f)=>{s.done=s.done||{};if(s.done[key])return;await f();s.done[key]=1;jsave(s)};
 async function upload(s){const say=t=>{if(s===ST)$('#up').textContent=t};say('Menyimpan…');
- await jpost('/photobooth/session',{id:s.id,nama:s.nama,manifest:s.pack.manifest});
- await put(s,'print.png',s.pack.print);await put(s,'target.jpg',s.pack.target);
- for(let i=0;i<s.lay.n;i++)if(s.pb[i])await put(s,`foto-${i+1}.jpg`,s.pb[i]);
- for(let i=0;i<s.lay.n;i++)if(s.vb[i])await sendVideo(s,i);
+ await st(s,'ses',()=>jpost('/photobooth/session',{id:s.id,nama:s.nama,manifest:s.pack.manifest}));
+ await st(s,'pr',()=>put(s,'print.png',s.pack.print));await st(s,'tg',()=>put(s,'target.jpg',s.pack.target));
+ for(let i=0;i<s.lay.n;i++)if(s.pb[i])await st(s,'f'+i,()=>put(s,`foto-${i+1}.jpg`,s.pb[i]));
+ for(let i=0;i<s.lay.n;i++)if(s.vb[i])await st(s,'v'+i,()=>sendVideo(s,i));
  FQ.push(s);ffl();say('Foto tersimpan ✓ · video AR sedang disiapkan…')}
-async function flush(){if(flushing||!K.api)return;flushing=true;
+async function flush(){if(flushing||!K.api||!navigator.onLine)return;flushing=true;
  for(const s of [...Q]){try{await upload(s);Q.splice(Q.indexOf(s),1)}catch(e){if(s===ST)$('#up').textContent='Belum terkirim — dicoba lagi otomatis';break}}
  flushing=false}
 // target.mind + finish jalan terpisah: upload sesi berikutnya tidak menunggu kompilasi sesi sebelumnya
 const FQ=[];let fb=false;
-async function fin(s){const mb=await s.pack.mindP;if(mb)await put(s,'target.mind',mb);await jpost('/photobooth/finish',{id:s.id,target:mb?'ready':'failed'})}
-async function ffl(){if(fb)return;fb=true;for(const s of [...FQ]){try{await fin(s);FQ.splice(FQ.indexOf(s),1);if(s===ST)$('#up').textContent='Tersimpan ✓ · video AR siap'}catch(e){break}}fb=false}
-setInterval(flush,30000);setInterval(ffl,30000);
+async function fin(s){if(s.pack.defer){await jpost('/photobooth/finish',{id:s.id,target:'pending'});return}const mb=await s.pack.mindP;if(mb)await put(s,'target.mind',mb);await jpost('/photobooth/finish',{id:s.id,target:mb?'ready':'failed'})}
+async function ffl(){if(fb||!navigator.onLine)return;fb=true;for(const s of [...FQ]){try{await fin(s);jdel(s.id);FQ.splice(FQ.indexOf(s),1);if(s===ST)$('#up').textContent=s.pack.defer?'Tersimpan ✓ · video AR diproses di belakang layar':'Tersimpan ✓ · video AR siap'}catch(e){break}}fb=false}
+setInterval(flush,30000);setInterval(ffl,30000);addEventListener('online',()=>{flush();ffl()});
+jall().then(js=>{(js||[]).forEach(j=>{if(Q.some(x=>x.id==j.id)||FQ.some(x=>x.id==j.id))return;Q.push({id:j.id,nama:j.nama,pack:{manifest:j.manifest,print:j.print,target:j.target,mindP:Promise.resolve(null),defer:true},pb:j.pb,vb:j.vb,ex:j.ex,lay:{n:j.n},done:j.done||{}})});if(Q.length)flush()}).catch(()=>{});
+const qb=document.createElement('div');qb.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99;font:600 12px system-ui,sans-serif;color:#fff;background:#000a;padding:6px 10px;border-radius:99px;display:none;pointer-events:none';document.body.appendChild(qb);
+setInterval(()=>{const n=Q.length+FQ.length,w=[];if(!navigator.onLine)w.push('Offline');if(n)w.push(n+' sesi menunggu unggah');if(typeof qrcode==='undefined')w.push('⚠ pustaka QR belum tersimpan');qb.textContent=w.join(' · ');qb.style.display=w.length?'block':'none'},2000);
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 const dl=(h,n)=>{const a=document.createElement('a');a.href=h;a.download=n;document.body.appendChild(a);a.click();a.remove()};
 
 // staff mode
-const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['cm34','Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)','text'],['cm6','Ukuran cetak 6 grid (cm, lebar x tinggi)','text'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['tgt','Resolusi target AR (sisi panjang px, 800-1500; kecil = kompilasi lebih cepat)','number'],['pin','PIN staff','text']];
+const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['cm34','Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)','text'],['cm6','Ukuran cetak 6 grid (cm, lebar x tinggi)','text'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['cmode','Kompilasi video AR dikerjakan di (kasir / kiosk)','text'],['tgt','Resolusi target AR (sisi panjang px, 800-1500; kecil = kompilasi lebih cepat)','number'],['pin','PIN staff','text']];
 AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</label><input id="a_${k}" type="${t}">`)});
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
 ['pointerup','pointerleave'].forEach(ev=>$('#logo').addEventListener(ev,()=>clearTimeout(press)));
