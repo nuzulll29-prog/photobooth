@@ -66,7 +66,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <button class="p" id="ss" style="width:100%">Simpan pengaturan</button><br><br><button id="lo" style="width:100%">Keluar</button></div>
 
 <div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak. Foto disusun rapi di A4 dengan ukuran asli, tanpa diperbesar atau diperkecil.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div>
-<label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
+<label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
 <div class="pg w" id="p4"><h1>Antrean AR</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Perangkat ini menyiapkan file pelacak (target.mind) di belakang layar, jadi kiosk tidak perlu menunggu. Biarkan aplikasi tetap terbuka.</p>
 <label style="display:flex;gap:8px;align-items:center"><input id="ao" class="ck" type="checkbox" checked>Proses otomatis</label><div id="ast" class="od" style="margin:10px 0"></div><div id="al"></div></div>
 <nav><button data-p="0" class="on">Kasir</button><button data-p="1">Pesanan</button><button data-p="3">Cetak</button><button data-p="4">AR</button><button data-p="2">Atur</button></nav></div>
@@ -153,8 +153,9 @@ $('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur')
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
  toast('Menyusun…');const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
  await Promise.all(sel.map(async({o,n})=>{const {data}=await sb.from('pb_sessions').select('id').ilike('order_code',o.code).order('created_at',{ascending:false}).limit(1);const id=data&&data[0]&&data[0].id;if(!id)return skip.push(o.code);
-  let cm=def;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def)}catch(e){}
-  for(let k=0;k<n;k++)its.push({w:cm[0]*10,h:cm[1]*10,src:`${LC.api}/photobooth/pub/${id}/print.png`,oid:o.id})}));
+  let cm=def,A=0;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0}catch(e){}
+  let w=cm[0]*10,h=cm[1]*10;if(A&&$('#tr').checked){if(A>w/h)h=w/A;else w=h*A;w=Math.round(w*10)/10;h=Math.round(h*10)/10}
+  for(let k=0;k<n;k++)its.push({w,h,src:`${LC.api}/photobooth/pub/${id}/print.png`,oid:o.id})}));
  if(!its.length)return toast('Foto belum masuk dari kiosk');
  const pg=pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas A4');
  PO=[...new Set(its.map(i=>i.oid))];const h=sheetHtml(pg,$('#gd').checked);$('#sheet').innerHTML=h;$('#pvb').innerHTML=h;
