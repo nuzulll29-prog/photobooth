@@ -72,7 +72,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <nav><button data-p="0" class="on">Kasir</button><button data-p="1">Pesanan</button><button data-p="3">Cetak</button><button data-p="4">AR</button><button data-p="2">Atur</button></nav></div>
 
 <div class="mod" id="dn"><div class="b"><div>Pesanan tersimpan</div><div class="code" id="dc"></div><div class="row"><button id="dp">Cetak struk</button><button id="dw" class="p">Kirim WA</button></div><br><button id="dx" style="width:100%">Pesanan baru</button><p id="dh" style="font-size:13px;color:var(--mut);margin:12px 0 0"></p></div></div>
-<div class="mod" id="pvm"><div class="b" style="max-width:520px"><div id="pvi" style="margin-bottom:8px;font-size:14px"></div><div id="pvb"></div><div class="row" style="margin-top:10px"><button id="pvx">Tutup</button><button class="p" id="pvp">Cetak</button></div><p style="font-size:12px;color:var(--mut);margin:8px 0 0">Di dialog cetak: kertas A4, skala 100% (jangan "Sesuaikan ke halaman"), margin Tidak ada.</p></div></div><div id="sheet"></div>
+<div class="mod" id="pvm"><div class="b" style="max-width:520px"><div id="pvi" style="margin-bottom:8px;font-size:14px"></div><div id="pvb"></div><div class="row" style="margin-top:10px"><button id="pvx">Tutup</button><button id="pvd">Unduh PDF</button><button class="p" id="pvp">Cetak</button></div><p style="font-size:12px;color:var(--mut);margin:8px 0 0">Di dialog cetak: kertas A4, skala 100% (jangan "Sesuaikan ke halaman"), margin Tidak ada.</p></div></div><div id="sheet"></div>
 <div id="rcp"></div><div id="toast"></div>
 
 <script>
@@ -123,7 +123,7 @@ async function load(){const q=$('#q').value.trim().replace(/[%,()]/g,''),s=new D
 $('#q').oninput=()=>{clearTimeout($('#q').t);$('#q').t=setTimeout(load,350)};
 
 async function sendTo(o,via){if(!navigator.onLine)return toast('Butuh internet untuk kirim file');if(via=='wa'&&!o.wa)return toast('Nomor WA belum diisi');if(via=='em'&&!o.email)return toast('Email belum diisi');
- const {data}=await sb.from('pb_sessions').select('id').ilike('order_code',o.code).order('created_at',{ascending:false}).limit(1);const id=data&&data[0]&&data[0].id;
+ const ss=await sessOf(o.code),id=ss&&ss.id;
  if(!id)return toast('Foto belum masuk dari kiosk');
  const link=[S.base&&S.base+(S.base.includes('?')?'&':'?')+'id='+id,S.dl&&S.dl.replace('{id}',id)].filter(Boolean).join('\n');
  const m=S.msg.replace(/\{nama\}/g,o.nama).replace(/\{kode\}/g,o.code).replace(/\{usaha\}/g,S.usaha).replace('{link}',link);
@@ -134,7 +134,7 @@ async function sendTo(o,via){if(!navigator.onLine)return toast('Butuh internet u
 
 // ===== Cetak A4 =====
 let LC={};try{LC=JSON.parse(localStorage.pbl||'{}')}catch(e){}
-let CO=[],PO=[];
+let CO=[],PO=[],PG=[],PGD=true;
 const cmP=v=>{const m=String(v||'').replace(/,/g,'.').match(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)/i);return m?[+m[1],+m[2]]:null};
 async function loadC(){if(!navigator.onLine){$('#cl').innerHTML='<p style="color:var(--mut)">Cetak A4 butuh internet.</p>';return}const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(+$('#cr').value||0));const {data}=await sb.from('orders').select('*').gte('created_at',d.toISOString()).order('created_at',{ascending:false});CO=data||[];
  $('#cl').innerHTML=CO.length?CO.map(o=>`<div class="cp"><input type="checkbox" data-i="${o.id}" ${o.printed||o.status!='lunas'?'':'checked'}><b>${esc(o.code)}<br><span style="font-weight:400;font-size:13px;color:var(--mut)">${new Date(o.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'})} · ${esc(o.nama)}${o.printed?' · sudah dicetak':''}${o.status!='lunas'?' · belum bayar':''}</span></b><input type="number" min="1" value="${o.prints}" data-n="${o.id}"></div>`).join(''):'<p style="color:var(--mut)">Belum ada pesanan pada rentang ini.</p>'}
@@ -149,18 +149,36 @@ function pack(its,rot){const PW=210,PH=297,M=5,G=3,pg=[];
  pg.forEach(p=>p.it.forEach(i=>{i.x+=(PW-(i.sh.x-G-M))/2-M}));return pg}
 const sheetHtml=(pg,gd)=>pg.map(p=>`<div class="A4">${p.it.map(i=>`<div class="it" style="left:${i.x}mm;top:${i.y}mm;width:${i.w}mm;height:${i.h}mm;${gd?'outline:.2mm solid #aaa;outline-offset:1mm':''}"><img src="${i.src}" style="${i.r?`position:absolute;left:50%;top:50%;width:${i.h}mm;height:${i.w}mm;transform:translate(-50%,-50%) rotate(90deg)`:'width:100%;height:100%'}"></div>`).join('')}</div>`).join('');
 $('#cr').onchange=loadC;
+const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+let SC=null;
+const sessList=async()=>{if(SC&&Date.now()-SC.t<20000)return SC.d;const {data,error}=await sb.from('pb_sessions').select('id,order_code').order('created_at',{ascending:false}).limit(400);if(!error&&data)SC={t:Date.now(),d:data};return data||[]};
+const sessOf=async code=>{const n=norm(code);return n?(await sessList()).find(x=>norm(x.order_code)==n):null};
+// unduh PDF A4 (ukuran asli, 300 dpi)
+const loadJs=u=>new Promise((a,b)=>{if(window.jspdf)return a();const e=document.createElement('script');e.src=u;e.onload=a;e.onerror=()=>b(new Error('pustaka PDF gagal dimuat'));document.head.appendChild(e)});
+async function savePdf(){try{toast('Membuat PDF…');await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+ const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true}),K=11.811,imgs={},cache={};
+ const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u+(u.includes('?')?'&':'?')+'c=1'}));
+ for(let pi=0;pi<PG.length;pi++){if(pi)doc.addPage('a4','portrait');
+  for(const i of PG[pi].it){const key=i.src+'|'+i.w+'|'+i.h+'|'+i.r;
+   if(!cache[key]){const im=await load(i.src),cv=document.createElement('canvas');cv.width=Math.round(i.w*K);cv.height=Math.round(i.h*K);const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);
+    const W0=i.r?cv.height:cv.width,H0=i.r?cv.width:cv.height,sc=Math.min(W0/im.naturalWidth,H0/im.naturalHeight),dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
+    c.translate(cv.width/2,cv.height/2);if(i.r)c.rotate(Math.PI/2);c.drawImage(im,-dw/2,-dh/2,dw,dh);cache[key]=cv.toDataURL('image/jpeg',.95)}
+   doc.addImage(cache[key],'JPEG',i.x,i.y,i.w,i.h,key);
+   if(PGD){doc.setDrawColor(170);doc.setLineWidth(.2);doc.rect(i.x-1,i.y-1,i.w+2,i.h+2)}}}
+ doc.save('cetak-A4-'+new Date().toISOString().slice(0,10)+'.pdf');toast('PDF siap diunduh')}catch(e){console.error(e);toast('Gagal membuat PDF: '+e.message)}}
 $('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur');
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
  toast('Menyusun…');const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
- await Promise.all(sel.map(async({o,n})=>{const {data}=await sb.from('pb_sessions').select('id').ilike('order_code',o.code).order('created_at',{ascending:false}).limit(1);const id=data&&data[0]&&data[0].id;if(!id)return skip.push(o.code);
+ await Promise.all(sel.map(async({o,n})=>{const ss=await sessOf(o.code),id=ss&&ss.id;if(!id)return skip.push(o.code);
   let cm=def,A=0;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0}catch(e){}
   let w=cm[0]*10,h=cm[1]*10;if(A&&$('#tr').checked){if(A>w/h)h=w/A;else w=h*A;w=Math.round(w*10)/10;h=Math.round(h*10)/10}
   for(let k=0;k<n;k++)its.push({w,h,src:`${LC.api}/photobooth/pub/${id}/print.png`,oid:o.id})}));
- if(!its.length)return toast('Foto belum masuk dari kiosk');
+ if(!its.length)return toast('Foto belum masuk dari kiosk: '+skip.join(', '));
  const pg=pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas A4');
- PO=[...new Set(its.map(i=>i.oid))];const h=sheetHtml(pg,$('#gd').checked);$('#sheet').innerHTML=h;$('#pvb').innerHTML=h;
+ PO=[...new Set(its.map(i=>i.oid))];PG=pg;PGD=$('#gd').checked;const h=sheetHtml(pg,$('#gd').checked);$('#sheet').innerHTML=h;$('#pvb').innerHTML=h;
  const z=Math.min(1,(innerWidth-72)/794);$$('#pvb .A4').forEach(a=>a.style.zoom=z);
- $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar A4`+(skip.length?` · dilewati (foto belum masuk): ${skip.join(', ')}`:'');$('#pvm').classList.add('show')};
+ $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar A4`+(skip.length?` · dilewati (foto belum masuk): ${skip.join(', ')} · kode terbaru di kiosk: ${(await sessList()).slice(0,5).map(x=>x.order_code||'(kosong)').join(', ')}`:'');$('#pvm').classList.add('show')};
+$('#pvd').onclick=savePdf;
 $('#pvx').onclick=()=>$('#pvm').classList.remove('show');
 $('#pvp').onclick=async()=>{await Promise.all([...$$('#sheet img')].map(i=>i.decode().catch(()=>{})));$('#pvm').classList.remove('show');document.body.classList.add('ps');setTimeout(()=>window.print(),100)};
 addEventListener('afterprint',async()=>{if(!document.body.classList.contains('ps'))return;document.body.classList.remove('ps');if(PO.length&&confirm('Tandai pesanan ini sudah tercetak?')){await sb.from('orders').update({printed:true}).in('id',PO);loadC()}});
