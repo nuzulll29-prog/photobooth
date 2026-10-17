@@ -2,7 +2,7 @@
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#e0457b"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
 <title>Photobooth</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
@@ -63,6 +63,15 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
 #pimg{display:none}
 @media (max-width:640px){#hd{gap:8px;padding:8px 10px}#logo{font-size:16px}#steps{min-width:0;gap:4px}#steps b{width:22px;height:22px;font-size:11px}#bk{padding:6px 10px}}
 @media print{@page{margin:0}html,body{margin:0!important;padding:0!important;height:100%!important;overflow:hidden!important}body>*:not(#pimg){display:none!important}#pimg{display:block!important;position:fixed;inset:0;width:100%;height:100%;object-fit:contain}}
+body.camfs{background:#000}
+body.camfs #hd{position:fixed;left:0;right:0;top:0;z-index:20;background:linear-gradient(#000b,transparent);color:#fff}
+body.camfs #scam{position:fixed;inset:0;z-index:10;padding:0;gap:0;background:#000;justify-content:center}
+body.camfs #pose{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 76px);z-index:15;margin:0;font-size:22px;color:#fff;text-shadow:0 2px 12px #000a;pointer-events:none}
+body.camfs #camb{border-radius:0;box-shadow:none;max-height:100dvh}
+body.camfs #dots{position:fixed;left:0;right:0;bottom:calc(128px + env(safe-area-inset-bottom,0px));z-index:15}
+body.camfs #cnt{position:fixed;left:0;right:0;bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:15;color:#fff}
+body.camfs #go{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:15}
+body.camfs #cerr{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:16;color:#fff}
 </style></head><body>
 <div id="app">
  <div id="hd"><button class="btn sm" id="bk" style="visibility:hidden">← Kembali</button><div id="logo">📸 <span id="evn"></span></div><div id="steps"></div></div>
@@ -78,7 +87,7 @@ input[type=text],input[type=password],input[type=number]{font:inherit;padding:12
    <div class="mut" id="swl">Warna bingkai</div><div class="sw" id="sw"></div>
    <input type="text" id="ttl" maxlength="28" placeholder="Judul / nama (opsional)">
    <button class="btn pri" id="n2">Lanjut ke foto →</button></section>
-  <section class="scr"><h2 id="pose">Siap bergaya?</h2>
+  <section class="scr" id="scam"><h2 id="pose">Siap bergaya?</h2>
    <div class="cam" id="camb"><video id="v" playsinline muted></video><div id="cg"></div><div id="cd"></div><div id="fl"></div></div>
    <div id="dots"></div><div class="mut" id="cnt"></div>
    <div id="cerr"><p>Kamera tidak bisa diakses. Izinkan akses kamera di pengaturan Safari.</p><div class="nav"><button class="btn sm" id="retry">Coba lagi</button><button class="btn sm" id="demo">Mode demo</button></div></div>
@@ -131,12 +140,13 @@ const sar=i=>ST.tpl.slots?ST.tpl.slots[i][2]/ST.tpl.slots[i][3]:ST.lay.ar;
 const th=()=>({...ST.tpl,accent:ST.accent||ST.tpl.accent,title:ST.title.trim()||ST.tpl.title});
 const qrUrl=()=>K.base+(K.base.includes('?')?'&':'?')+'id='+ST.id;
 
-function go(n){scr=n;document.querySelectorAll('.scr').forEach((s,i)=>s.classList.toggle('show',i==n));
+function go(n){scr=n;document.querySelectorAll('.scr').forEach((s,i)=>s.classList.toggle('show',i==n));document.body.classList.toggle('camfs',document.querySelectorAll('.scr')[n]===$('#scam'));
  $('#steps').innerHTML=n&&n<6?['Layout','Template','Foto','Cek','Selesai'].map((t,i)=>`<b class="${i+1==n?'on':i+1<n?'dn':''}">${i+1}</b>`).join(''):'';
  $('#bk').style.visibility=(n==0||n==5)?'hidden':'visible'}
 $('#bk').onclick=()=>{if(busy)return;go({1:6,2:1,3:ST.photos.some(Boolean)?4:2,4:2,6:0}[scr])};
 function reset(){newSes();$('#nm').value='';$('#ttl').value='';buildLay();buildTpl();buildSw();go(0)}
-$('#start').onclick=()=>{go(6);$('#nm').focus()};
+const fs=()=>{try{const d=document.documentElement;if(!document.fullscreenElement&&!matchMedia('(display-mode: fullscreen)').matches&&!matchMedia('(display-mode: standalone)').matches&&d.requestFullscreen)d.requestFullscreen({navigationUI:'hide'}).catch(()=>{})}catch(e){}};
+$('#start').onclick=()=>{fs();go(6);$('#nm').focus()};
 const cleanNama=v=>String(v||'').replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,30);
 $('#nn').onclick=()=>{ST.nama=cleanNama($('#nm').value);go(1)};
 $('#nskip').onclick=()=>{ST.nama='';$('#nm').value='';go(1)};
@@ -188,8 +198,8 @@ async function cam(){$('#cerr').style.display='none';if(demo||stream)return true
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:1280,height:960},audio:false});const v=$('#v');v.srcObject=stream;await v.play();return true}
  catch(e){$('#cerr').style.display='block';return false}}
 $('#retry').onclick=()=>cam();$('#demo').onclick=()=>{demo=true;$('#cerr').style.display='none'};
-const CAMR=4/3; // rasio tampilan kamera (lebar), apa pun posisi HP/iPad
-const camBox=ar=>{$('#camb').style.cssText=`aspect-ratio:${CAMR};width:min(96%,${(58*CAMR).toFixed(1)}vh)`;
+let CAMR=4/3; // rasio tampilan kamera (lebar), apa pun posisi HP/iPad
+const camBox=ar=>{CAMR=Math.min(1.6,Math.max(.75,innerWidth/innerHeight));$('#camb').style.cssText=`aspect-ratio:${CAMR};width:min(100vw,${(100*CAMR).toFixed(2)}dvh)`;
  const g=$('#cg');if(ar>=CAMR){g.style.width='100%';g.style.height=(CAMR/ar*100)+'%'}else{g.style.height='100%';g.style.width=(ar/CAMR*100)+'%'}};
 // area 4:3 di tengah frame kamera (kalau kamera tegak/portrait, dipotong jadi lebar)
 function lRect(v){const iw=v.videoWidth,ih=v.videoHeight;let w=iw,h=iw/CAMR;if(h>ih){h=ih;w=ih*CAMR}return{x:(iw-w)/2,y:(ih-h)/2,w,h}}
