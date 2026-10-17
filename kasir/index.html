@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#e0457b"><title>Kasir Photobooth</title>
+<meta name="theme-color" content="#e0457b"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="../icon-kasir-192.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>Kasir Photobooth</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
@@ -66,7 +66,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <button class="p" id="ss" style="width:100%">Simpan pengaturan</button><br><br><button id="lo" style="width:100%">Keluar</button></div>
 
 <div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak. Foto disusun rapi di A4 dengan ukuran asli, tanpa diperbesar atau diperkecil.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div>
-<label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
+<label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><label>Skala foto grid 6 (lebih besar dari ukuran asli)</label><select id="s6"><option value="100">100% (ukuran asli)</option><option value="115">115%</option><option value="130">130%</option><option value="150">150%</option></select><br><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
 <div class="pg w" id="p4"><h1>Antrean AR</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Perangkat ini menyiapkan file pelacak (target.mind) di belakang layar, jadi kiosk tidak perlu menunggu. Biarkan aplikasi tetap terbuka.</p>
 <label style="display:flex;gap:8px;align-items:center"><input id="ao" class="ck" type="checkbox" checked>Proses otomatis</label><div id="ast" class="od" style="margin:10px 0"></div><div id="al"></div></div>
 <nav><button data-p="0" class="on">Kasir</button><button data-p="1">Pesanan</button><button data-p="3">Cetak</button><button data-p="4">AR</button><button data-p="2">Atur</button></nav></div>
@@ -94,7 +94,7 @@ function mk(){if(!C.url||!C.key)return false;sb=supabase.createClient(C.url,C.ke
 $('#lb').onclick=async()=>{C={url:$('#su').value.trim(),key:$('#sk').value.trim()};if(!mk())return toast('Isi URL dan anon key');
  const {error}=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});if(error)return toast('Gagal masuk: '+error.message);localStorage.pbc=JSON.stringify(C);localStorage.pbstaff='1';enter()};
 $('#lo').onclick=async()=>{if((PQ.o.length||PQ.p.length)&&!confirm('Masih ada data offline yang belum sinkron. Keluar tetap?'))return;localStorage.removeItem('pbstaff');await sb.auth.signOut().catch(()=>{});location.reload()};
-$('#ss').onclick=async()=>{LC={api:$('#l_api').value.trim().replace(/\/+$/,''),key:$('#l_key').value.trim(),cm:$('#l_cm').value.trim()||'5x15',cm6:$('#l_cm6').value.trim()||'5x15',pfx:$('#l_pfx').value.trim()};localStorage.pbl=JSON.stringify(LC);const rows=['usaha','fee','unit','base','dl','msg'].map(k=>({key:k,value:$('#s_'+k).value.trim()}));const {error}=await sb.from('settings').upsert(rows);if(error)return toast(error.message);rows.forEach(r=>S[r.key]=r.value);localStorage.pbs=JSON.stringify(S);$('#ush').textContent=S.usaha;calc();toast('Pengaturan disimpan')};
+$('#ss').onclick=async()=>{LC={...LC,api:$('#l_api').value.trim().replace(/\/+$/,''),key:$('#l_key').value.trim(),cm:$('#l_cm').value.trim()||'5x15',cm6:$('#l_cm6').value.trim()||'5x15',pfx:$('#l_pfx').value.trim()};localStorage.pbl=JSON.stringify(LC);const rows=['usaha','fee','unit','base','dl','msg'].map(k=>({key:k,value:$('#s_'+k).value.trim()}));const {error}=await sb.from('settings').upsert(rows);if(error)return toast(error.message);rows.forEach(r=>S[r.key]=r.value);localStorage.pbs=JSON.stringify(S);$('#ush').textContent=S.usaha;calc();toast('Pengaturan disimpan')};
 
 async function save(lunas){const nama=$('#nm').value.trim();if(!nama)return toast('Isi nama pelanggan');const t=tot();
  if(lunas&&mth=='tunai'&&(+$('#by').value||0)<t)return toast('Uang diterima kurang');
@@ -148,7 +148,7 @@ function pack(its,rot){const PW=210,PH=297,M=5,G=3,pg=[];
  for(const t of its)if(!pg.some(p=>fit(p,t))){const p={it:[],sh:[],y:M};pg.push(p);if(!fit(p,t))return null}
  pg.forEach(p=>p.it.forEach(i=>{i.x+=(PW-(i.sh.x-G-M))/2-M}));return pg}
 const sheetHtml=(pg,gd)=>pg.map(p=>`<div class="A4">${p.it.map(i=>`<div class="it" style="left:${i.x}mm;top:${i.y}mm;width:${i.w}mm;height:${i.h}mm;${gd?'outline:.2mm solid #aaa;outline-offset:1mm':''}"><img src="${i.src}" style="${i.r?`position:absolute;left:50%;top:50%;width:${i.h}mm;height:${i.w}mm;transform:translate(-50%,-50%) rotate(90deg)`:'width:100%;height:100%'}"></div>`).join('')}</div>`).join('');
-$('#cr').onchange=loadC;
+$('#cr').onchange=loadC;$('#s6').value=LC.s6||'100';$('#s6').onchange=()=>{LC.s6=$('#s6').value;localStorage.pbl=JSON.stringify(LC)};
 const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 let SC=null;
 const sessList=async()=>{if(SC&&Date.now()-SC.t<20000)return SC.d;const {data,error}=await sb.from('pb_sessions').select('id,order_code').order('created_at',{ascending:false}).limit(400);if(!error&&data)SC={t:Date.now(),d:data};return data||[]};
@@ -168,10 +168,11 @@ async function savePdf(){try{toast('Membuat PDF…');await loadJs('https://cdnjs
  doc.save('cetak-A4-'+new Date().toISOString().slice(0,10)+'.pdf');toast('PDF siap diunduh')}catch(e){console.error(e);toast('Gagal membuat PDF: '+e.message)}}
 $('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur');
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
- toast('Menyusun…');const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
+ toast('Menyusun…');const f6=(+$('#s6').value||100)/100;const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
  await Promise.all(sel.map(async({o,n})=>{const ss=await sessOf(o.code),id=ss&&ss.id;if(!id)return skip.push(o.code);
-  let cm=def,A=0;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0}catch(e){}
+  let cm=def,A=0,six=false;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0;six=!!(m.slots&&m.slots.length>=6)}catch(e){}
   let w=cm[0]*10,h=cm[1]*10;if(A&&$('#tr').checked){if(A>w/h)h=w/A;else w=h*A;w=Math.round(w*10)/10;h=Math.round(h*10)/10}
+  if(six&&f6!=1){w=Math.round(w*f6*10)/10;h=Math.round(h*f6*10)/10}
   for(let k=0;k<n;k++)its.push({w,h,src:`${LC.api}/photobooth/pub/${id}/print.png`,oid:o.id})}));
  if(!its.length)return toast('Foto belum masuk dari kiosk: '+skip.join(', '));
  const pg=pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas A4');
