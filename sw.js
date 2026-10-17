@@ -1,5 +1,5 @@
 // Service worker kiosk: halaman & pustaka QR tetap terbuka saat offline
-const V='pb-v1',PRE=['./','index.html','https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
+const V='pb-v2',PRE=['./','index.html','manifest.webmanifest','icon-192.png','https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(V).then(c=>Promise.all(PRE.map(u=>c.add(u.startsWith('http')?new Request(u,{mode:'no-cors'}):u).catch(()=>{})))).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(x=>x!=V).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!='GET')return;
