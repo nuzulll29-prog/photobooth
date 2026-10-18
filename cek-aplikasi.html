@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#e0457b"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Cek instalasi aplikasi</title>
+<style>body{margin:0;padding:20px;font:17px/1.5 system-ui,sans-serif;background:#1b1217;color:#fbeef3}h1{font-size:22px}
+.r{padding:10px 12px;border-radius:12px;margin:8px 0;background:#2a1d24}.ok{border-left:6px solid #2f9e63}.no{border-left:6px solid #e05a45}.w{border-left:6px solid #c9831b}
+button{font:inherit;font-weight:700;padding:14px 20px;border:0;border-radius:99px;background:#e0457b;color:#fff;width:100%;margin-top:12px}small{color:#c49aab}</style></head>
+<body><h1>Cek instalasi aplikasi</h1><div id="o"></div><button id="ins" style="display:none">Instal aplikasi kiosk</button>
+<script>
+const o=document.getElementById('o'),add=(c,t)=>{const d=document.createElement('div');d.className='r '+c;d.innerHTML=t;o.appendChild(d)};
+const ck=async(u,n)=>{try{const r=await fetch(u,{cache:'no-store'});add(r.ok?'ok':'no',`${n}: ${r.ok?'ada':'TIDAK DITEMUKAN ('+r.status+')'} <small>${u}</small>`);return r.ok?r:null}catch(e){add('no',`${n}: gagal dimuat <small>${u}</small>`);return null}};
+(async()=>{
+ const ua=navigator.userAgent;
+ if(/Android/.test(ua)&&!/Mobile/.test(ua))add('w','Chrome memakai <b>Situs desktop</b>. Matikan (menu ⋮, hilangkan centang "Situs desktop"), lalu muat ulang. Pada mode ini opsi Instal tidak muncul.');
+ else add('ok','Mode situs: normal (bukan desktop)');
+ add(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches?'ok':'w','Dibuka sebagai: '+(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches?'aplikasi':'tab browser biasa'));
+ const m=await ck('manifest.webmanifest','Manifest kiosk');
+ if(m){try{const j=await m.json();for(const i of j.icons||[])await ck(new URL(i.src,location.href).pathname,'Ikon '+i.sizes)}catch(e){add('no','Isi manifest kiosk bukan JSON yang valid')}}
+ await ck('kasir/manifest.webmanifest','Manifest kasir');await ck('icon-kasir-192.png','Ikon kasir 192');await ck('sw.js','Service worker (sw.js)');
+ if('serviceWorker'in navigator){const g=await navigator.serviceWorker.getRegistration();add(g&&g.active?'ok':'w','Service worker: '+(g&&g.active?'aktif':'belum aktif. Muat ulang halaman ini 1–2 kali.'))}
+ else add('no','Browser tidak mendukung service worker');
+ add('w','Tombol Instal di bawah muncul jika semua syarat terpenuhi.');
+})();
+let ev;addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;document.getElementById('ins').style.display='block';add('ok','Browser siap menginstal aplikasi. Tekan tombol Instal.')});
+document.getElementById('ins').onclick=async()=>{if(!ev)return;ev.prompt();await ev.userChoice;ev=null};
+addEventListener('appinstalled',()=>add('ok','Aplikasi terpasang.'));
+</script></body></html>
