@@ -57,7 +57,7 @@ function handle(o){
  if(o.t=='scr'){const n=o.n;if(n==0){shots=[];cur=-1;$('#ri').style.display='none';$('#rn').style.display='none';$('#rt').textContent='Menyiapkan hasil…'}
   if(n==3)show('cam');else if(n==4){$('#rg').innerHTML='';shots.forEach(u=>{if(u){const i=new Image();i.src=u;$('#rg').appendChild(i)}});show('rev')}
   else if(n==5)show('res');else{$('#im').textContent={1:'Memilih layout…',2:'Memilih tema…',6:'Mengisi kode order…'}[n]||'Ayo berfoto!';show('idle')}}
- else if(o.t=='shoot'){ar=o.ar||1.4;camr=o.camr||4/3;nn=o.n||3;$('#top').textContent=o.pose||'';$('#cd').textContent='';boxFit();dotsDraw();show('cam')}
+ else if(o.t=='shoot'){$('#v').style.transform=o.mir===false?'none':'';ar=o.ar||1.4;camr=o.camr||4/3;nn=o.n||3;$('#top').textContent=o.pose||'';$('#cd').textContent='';boxFit();dotsDraw();show('cam')}
  else if(o.t=='cd')$('#cd').textContent=o.n;
  else if(o.t=='fl'){$('#cd').textContent='';$('#fl').style.opacity=1;setTimeout(()=>$('#fl').style.opacity=0,150)}
  else if(o.t=='dots'){nn=o.n;cur=o.cur;$('#top').textContent=cur>=0?`Foto ${cur+1} dari ${nn}`:$('#top').textContent;dotsDraw()}
