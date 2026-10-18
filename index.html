@@ -291,9 +291,11 @@ var LY={
  result(){try{const c=$('#cv'),t=document.createElement('canvas'),k=Math.min(1,1000/c.height);t.width=Math.round(c.width*k);t.height=Math.round(c.height*k);t.getContext('2d').drawImage(c,0,0,t.width,t.height);let q=.8,d;do{d=t.toDataURL('image/jpeg',q);q-=.1}while(d.length>230000&&q>.3);LY.send({t:'result',img:d})}catch(e){}},
  post(m){LYc.q=LYc.q.then(()=>fetch(LY.base()+'/photobooth/sig',{method:'POST',headers:LY.hd(),body:JSON.stringify({room:LYc.room,from:'a',msg:m})})).catch(()=>{})},
  stop(){clearInterval(LYc.t);try{LYc.pc&&LYc.pc.close()}catch(e){}LYc.pc=LYc.dc=LYc.snd=null;LYc.room=''},
+ async ice(){const now=Date.now();if(LYc.iceL&&now-LYc.iceT<36e5)return LYc.iceL;let l=[{urls:'stun:stun.l.google.com:19302'}];try{const r=await fetch(LY.base()+'/photobooth/ice',{headers:{'X-Kiosk-Key':K.key}}),j=await r.json();if(Array.isArray(j.iceServers)&&j.iceServers.length){l=l.concat(j.iceServers);LYc.iceL=l;LYc.iceT=now}}catch(e){}return l},
  async start(){if(!K.lyc||!K.api||!K.key||!window.RTCPeerConnection)return LY.stop();
+  const ice=await LY.ice();if(!K.lyc)return LY.stop();
   const room=String(K.lyc).trim();LY.stop();LYc.room=room;LYc.after=0;LYc.k=0;
-  const sid=Math.random().toString(36).slice(2,8),pc=LYc.pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  const sid=Math.random().toString(36).slice(2,8),pc=LYc.pc=new RTCPeerConnection({iceServers:ice});
   LYc.snd=pc.addTransceiver('video',{direction:'sendonly'}).sender;LY.track();
   const dc=LYc.dc=pc.createDataChannel('ly');
   dc.onopen=()=>{LY.send({t:'scr',n:scr});if(scr==3&&ST.todo)LY.send({t:'shoot',ar:sar(ST.todo[0]),camr:CAMR,mir:MIR,n:ST.lay.n,pose:$('#pose').textContent});if(scr==5)LY.result()};
