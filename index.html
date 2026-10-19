@@ -123,12 +123,12 @@ const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:
 {name:'Biru Pastel',bg:'#e8f3ff',accent:'#4a8fe7',text:'#1f3b63',font:"'Trebuchet MS', sans-serif",stick:'☁️⭐',radius:26,border:6,gap:24,title:'Sweet Day'},
 {name:'Hijau Sage',bg:'#eef3e6',accent:'#6b8f4e',text:'#34472a',font:'Georgia, serif',stick:'🌿🌼',radius:20,border:5,gap:22,title:'Garden Party'},
 {name:'Hitam Emas',bg:'#16130d',accent:'#d4af37',text:'#f3e6b8',font:'Georgia, serif',stick:'⭐✨',radius:10,border:6,gap:22,title:'Golden Night'},
-{name:'Santri Hijau',img:'templates/santri-hijau.png',W:507,H:1536,c:1,slots:[[68,364,375,216],[67,617,376,216],[68,870,376,205]],qr:[196,1182,134]},
-{name:'Santri Biru',img:'templates/santri-biru.png',W:504,H:1536,c:1,slots:[[46,356,388,222],[52,617,385,214],[55,875,384,208]],qr:[184,1192,127]},
-{name:'Santri Hijau',img:'templates/hijau-4.png',W:942,H:2280,c:1,slots:[[196,565,568,272],[194,887,569,276],[193,1211,569,289],[193,1555,570,270]],qr:[385,1960,165]},
-{name:'Santri Toska',img:'templates/toska-4.png',W:942,H:2220,c:1,slots:[[249,427,520,213],[190,702,579,229],[189,995,579,233],[189,1289,520,217]],qr:[366,1682,195]},
-{name:'Santri Hijau',img:'templates/hijau-6.png',W:1005,H:2280,c:2,slots:[[115,577,353,335],[520,577,354,335],[115,955,353,336],[520,955,354,336],[115,1333,353,331],[520,1333,354,331]],qr:[404,1853,172]},
-{name:'Santri Toska',img:'templates/toska-6.png',W:1005,H:2220,c:2,slots:[[81,406,387,257],[521,406,384,257],[81,706,388,272],[523,706,383,272],[84,1021,384,271],[523,1021,383,271]],qr:[382,1682,194]}];
+{name:'Santri Hijau',img:'templates/hari-santri-hijau-3.png',W:591,H:1772,c:1,cm:[5,15],slots:[[107,485,380,255],[107,797,380,255],[107,1107,380,255]],qr:[234,1500,124]},
+{name:'Santri Biru',img:'templates/hari-santri-toska-3.png',W:591,H:1772,c:1,cm:[5,15],slots:[[81,345,432,242],[81,643,430,237],[81,936,432,235]],qr:[222,1315,146]},
+{name:'Santri Hijau',img:'templates/hari-santri-hijau-4.png',W:591,H:1772,c:1,cm:[5,15],slots:[[54,372,483,253],[55,671,482,250],[54,964,483,248],[55,1256,482,238]],qr:[260,1573,70]},
+{name:'Santri Toska',img:'templates/hari-santri-toska-4.png',W:591,H:1772,c:1,cm:[5,15],slots:[[78,272,434,252],[79,573,433,252],[79,873,433,247],[79,1168,433,242]],qr:[237,1509,116]},
+{name:'Santri Hijau',img:'templates/hari-santri-hijau-6.png',W:1181,H:1772,c:2,cm:[10,15],slots:[[139,451,407,255],[616,451,407,255],[139,745,407,256],[615,745,408,256],[139,1038,407,252],[615,1038,408,252]],qr:[504,1436,142]},
+{name:'Santri Toska',img:'templates/hari-santri-toska-6.png',W:1181,H:1772,c:2,cm:[10,15],slots:[[116,336,445,288],[619,342,448,287],[118,678,443,279],[619,678,451,282],[114,1010,447,262],[619,1011,446,262]],qr:[503,1407,174]}];
 const SW=['#e0457b','#ff7a45','#f5b301','#3fae6a','#3b82f6','#8b5cf6'],POSE=['Senyum! 😄','Pose lucu! 🤪','Gaya bebas! 😎','Peluk teman! 🤗','Ekspresi kaget! 😲','Tebar pesona! 😍'];
 let MIR=true,ST,stream=null,demo=false,busy=false,rects=[],last=Date.now(),scr=0,press,LAST=null,Q=[],flushing=false;
 const defTpl=()=>TPL.find(t=>t.ok)||TPL[0];
@@ -291,16 +291,22 @@ var LY={
  result(){try{const c=$('#cv'),t=document.createElement('canvas'),k=Math.min(1,1000/c.height);t.width=Math.round(c.width*k);t.height=Math.round(c.height*k);t.getContext('2d').drawImage(c,0,0,t.width,t.height);let q=.8,d;do{d=t.toDataURL('image/jpeg',q);q-=.1}while(d.length>230000&&q>.3);LY.send({t:'result',img:d})}catch(e){}},
  post(m){LYc.q=LYc.q.then(()=>fetch(LY.base()+'/photobooth/sig',{method:'POST',headers:LY.hd(),body:JSON.stringify({room:LYc.room,from:'a',msg:m})})).catch(()=>{})},
  stop(){clearInterval(LYc.t);try{LYc.pc&&LYc.pc.close()}catch(e){}LYc.pc=LYc.dc=LYc.snd=null;LYc.room=''},
- async ice(){const now=Date.now();if(LYc.iceL&&now-LYc.iceT<36e5)return LYc.iceL;let l=[{urls:'stun:stun.l.google.com:19302'}];try{const r=await fetch(LY.base()+'/photobooth/ice',{headers:{'X-Kiosk-Key':K.key}}),j=await r.json();if(Array.isArray(j.iceServers)&&j.iceServers.length){l=l.concat(j.iceServers);LYc.iceL=l;LYc.iceT=now}}catch(e){}return l},
+ async ice(){const now=Date.now();if(LYc.iceL&&now-LYc.iceT<36e5)return LYc.iceL;let l=[{urls:'stun:stun.l.google.com:19302'}];LYc.turn=false;
+  try{const r=await fetch(LY.base()+'/photobooth/ice',{headers:{'X-Kiosk-Key':K.key}});
+   if(!r.ok)LYc.info='gagal, HTTP '+r.status;
+   else{const j=await r.json();if(Array.isArray(j.iceServers)&&j.iceServers.length){l=l.concat(j.iceServers);LYc.iceL=l;LYc.iceT=now;LYc.turn=true;LYc.info='ada'}else LYc.info='kosong'+(j.err?' (Cloudflare '+j.err+')':' (secret belum terbaca Worker)')}}
+  catch(e){LYc.info='gagal: '+(e.message||e)}
+  return l},
  async start(){if(!K.lyc||!K.api||!K.key||!window.RTCPeerConnection)return LY.stop();
   const ice=await LY.ice();if(!K.lyc)return LY.stop();
-  const room=String(K.lyc).trim();LY.stop();LYc.room=room;LYc.after=0;LYc.k=0;
-  const sid=Math.random().toString(36).slice(2,8),pc=LYc.pc=new RTCPeerConnection({iceServers:ice});
+  const room=String(K.lyc).trim();LY.stop();LYc.room=room;LYc.after=0;LYc.k=0;LYc.cnt={};try{LYc.relay=LYc.relay||localStorage.getItem('pbrelay')=='1'}catch(e){}
+  const sid=Math.random().toString(36).slice(2,8),pc=LYc.pc=new RTCPeerConnection({iceServers:ice,iceTransportPolicy:(LYc.relay&&LYc.turn)?'relay':'all'});
   LYc.snd=pc.addTransceiver('video',{direction:'sendonly'}).sender;LY.track();
   const dc=LYc.dc=pc.createDataChannel('ly');
   dc.onopen=()=>{LY.send({t:'scr',n:scr});if(scr==3&&ST.todo)LY.send({t:'shoot',ar:sar(ST.todo[0]),camr:CAMR,mir:MIR,n:ST.lay.n,pose:$('#pose').textContent});if(scr==5)LY.result()};
-  pc.onicecandidate=e=>e.candidate&&LY.post({sid,c:e.candidate});
-  pc.onconnectionstatechange=()=>{if(pc.connectionState=='failed'&&LYc.pc===pc)setTimeout(()=>LY.start(),2000)};
+  pc.onicecandidate=e=>{if(e.candidate){const t=(/ typ (\w+)/.exec(e.candidate.candidate)||[])[1]||'?';LYc.cnt[t]=(LYc.cnt[t]||0)+1;LY.post({sid,c:e.candidate})}};
+  setTimeout(()=>{if(LYc.pc===pc&&pc.connectionState!='connected'&&LYc.turn&&!LYc.relay){relayOn();LY.start()}},15000);
+  pc.onconnectionstatechange=()=>{if(pc.connectionState=='failed'&&LYc.pc===pc){if(LYc.turn)relayOn();setTimeout(()=>LY.start(),2000)}};
   try{await pc.setLocalDescription(await pc.createOffer());LY.post({sid,offer:pc.localDescription})}catch(e){return}
   LYc.t=setInterval(async()=>{if(pc.connectionState=='connected'&&++LYc.k%6)return;
    try{const r=await fetch(`${LY.base()}/photobooth/sig?room=${encodeURIComponent(room)}&for=a&after=${LYc.after}`,{headers:{'X-Kiosk-Key':K.key}}),j=await r.json();
@@ -342,7 +348,10 @@ AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</lab
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
 ['pointerup','pointerleave'].forEach(ev=>$('#logo').addEventListener(ev,()=>clearTimeout(press)));
 $('#pc').onclick=()=>$('#pinm').classList.remove('show');
-$('#po').onclick=()=>{if($('#pin').value!==K.pin){$('#pin').value='';return}$('#pinm').classList.remove('show');AF.forEach(([k])=>$('#a_'+k).value=K[k]);try{navigator.mediaDevices.enumerateDevices().then(ds=>{$('#camlist').innerHTML=ds.filter(d=>d.kind=='videoinput'&&d.label).map(d=>`<option value="${d.label.replace(/"/g,'')}">`).join('')})}catch(e){}$('#aq').textContent='Antrean upload: '+Q.length+' sesi · Layar: '+(LYc.dc&&LYc.dc.readyState=='open'?'terhubung':(LYc.room?'menunggu ('+(LYc.pc?LYc.pc.connectionState+'/'+LYc.pc.iceConnectionState:'-')+')':'mati'));$('#adm').classList.add('show')};
+function relayOn(){LYc.relay=true;try{localStorage.setItem('pbrelay','1')}catch(e){}}
+const aqTxt=()=>'Antrean upload: '+Q.length+' sesi · Layar: '+(LYc.dc&&LYc.dc.readyState=='open'?'terhubung':(LYc.room?'menunggu ('+(LYc.pc?LYc.pc.connectionState+'/'+LYc.pc.iceConnectionState:'-')+')':'mati'))+(LYc.room?' · TURN: '+(LYc.info||'memeriksa…')+(LYc.relay?' · mode relay':'')+' · kandidat: '+['host','srflx','relay'].map(x=>x+' '+((LYc.cnt||{})[x]||0)).join(', '):'');
+setInterval(()=>{if($('#adm').classList.contains('show'))$('#aq').textContent=aqTxt()},1000);
+$('#po').onclick=()=>{if($('#pin').value!==K.pin){$('#pin').value='';return}$('#pinm').classList.remove('show');AF.forEach(([k])=>$('#a_'+k).value=K[k]);try{navigator.mediaDevices.enumerateDevices().then(ds=>{$('#camlist').innerHTML=ds.filter(d=>d.kind=='videoinput'&&d.label).map(d=>`<option value="${d.label.replace(/"/g,'')}">`).join('')})}catch(e){}$('#aq').textContent=aqTxt();$('#adm').classList.add('show')};
 $('#as').onclick=()=>{const oc=K.camf+'|'+K.camn+'|'+K.camres;AF.forEach(([k,,t])=>K[k]=t=='number'?Math.max(1,+$('#a_'+k).value||1):$('#a_'+k).value);try{localStorage.setItem('pbk',JSON.stringify(K))}catch(e){}if(stream&&oc!==K.camf+'|'+K.camn+'|'+K.camres){stream.getTracks().forEach(t=>t.stop());stream=null;$('#v').srcObject=null}$('#adm').classList.remove('show');init();flush()};
 $('#apk').onclick=async()=>{const s=LAST;if(!s)return;dl(URL.createObjectURL(new Blob([JSON.stringify(s.pack.manifest,null,2)],{type:'application/json'})),`${s.id}_manifest.json`);
  await sleep(350);dl(URL.createObjectURL(s.pack.print),`${s.id}_print.png`);await sleep(350);dl(URL.createObjectURL(s.pack.target),`${s.id}_target.jpg`);const mb=await s.pack.mindP;if(mb){await sleep(350);dl(URL.createObjectURL(mb),`${s.id}_target.mind`)}
