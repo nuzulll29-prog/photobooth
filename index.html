@@ -299,8 +299,8 @@ var LY={
   return l},
  async start(){if(!K.lyc||!K.api||!K.key||!window.RTCPeerConnection)return LY.stop();
   const ice=await LY.ice();if(!K.lyc)return LY.stop();
-  const room=String(K.lyc).trim();LY.stop();LYc.room=room;LYc.after=0;LYc.k=0;LYc.cnt={};try{LYc.relay=LYc.relay||localStorage.getItem('pbrelay')=='1'}catch(e){}
-  const sid=Math.random().toString(36).slice(2,8),pc=LYc.pc=new RTCPeerConnection({iceServers:ice,iceTransportPolicy:(LYc.relay&&LYc.turn)?'relay':'all'});
+  const room=String(K.lyc).trim();LY.stop();LYc.room=room;LYc.after=0;LYc.k=0;LYc.cnt={};LYc.ans=0;try{LYc.relay=LYc.relay||localStorage.getItem('pbrelay')=='1'}catch(e){}
+  const sid=Math.random().toString(36).slice(2,8),pc=LYc.pc=mkPC(ice,(LYc.relay&&LYc.turn)?'relay':'all');
   LYc.snd=pc.addTransceiver('video',{direction:'sendonly'}).sender;LY.track();
   const dc=LYc.dc=pc.createDataChannel('ly');
   dc.onopen=()=>{LY.send({t:'scr',n:scr});if(scr==3&&ST.todo)LY.send({t:'shoot',ar:sar(ST.todo[0]),camr:CAMR,mir:MIR,n:ST.lay.n,pose:$('#pose').textContent});if(scr==5)LY.result()};
@@ -312,7 +312,7 @@ var LY={
    try{const r=await fetch(`${LY.base()}/photobooth/sig?room=${encodeURIComponent(room)}&for=a&after=${LYc.after}`,{headers:{'X-Kiosk-Key':K.key}}),j=await r.json();
     for(const x of j.msgs||[]){LYc.after=Math.max(LYc.after,x.i);const d=x.m;
      if(d.hello){if(d.hello!==LYc.hello){const first=!LYc.hello;LYc.hello=d.hello;if(!first){LY.start();return}}continue}
-     if(d.sid!==sid)continue;if(d.answer&&!pc.currentRemoteDescription)await pc.setRemoteDescription(d.answer);if(d.c)await pc.addIceCandidate(d.c).catch(()=>{})}}catch(e){}},900)}
+     if(d.sid!==sid)continue;if(d.answer&&!pc.currentRemoteDescription){await pc.setRemoteDescription(d.answer);LYc.ans=(LYc.ans||0)+1}if(d.c)await pc.addIceCandidate(d.c).catch(()=>{})}}catch(e){}},900)}
 };
 setInterval(()=>{if((K.lyc||'')!==(LYc.room||''))LY.start()},5000);if(K.lyc)LY.start();
 // ===== mode offline: antrean disimpan di penyimpanan perangkat (IndexedDB), tahan tutup tab/mati listrik =====
@@ -348,8 +348,11 @@ AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</lab
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
 ['pointerup','pointerleave'].forEach(ev=>$('#logo').addEventListener(ev,()=>clearTimeout(press)));
 $('#pc').onclick=()=>$('#pinm').classList.remove('show');
+function mkPC(ice,pol){const f=x=>x.map(s=>({...s,urls:[].concat(s.urls).filter(u=>!/^turns?:[^?]*:53(\?|$)/.test(u))})).filter(s=>s.urls.length);
+ for(const x of [ice,f(ice),[{urls:'stun:stun.l.google.com:19302'}]]){try{return new RTCPeerConnection({iceServers:x,iceTransportPolicy:pol})}catch(e){LYc.err='RTC: '+(e.message||e)}}
+ return new RTCPeerConnection()}
 function relayOn(){LYc.relay=true;try{localStorage.setItem('pbrelay','1')}catch(e){}}
-const aqTxt=()=>'Antrean upload: '+Q.length+' sesi · Layar: '+(LYc.dc&&LYc.dc.readyState=='open'?'terhubung':(LYc.room?'menunggu ('+(LYc.pc?LYc.pc.connectionState+'/'+LYc.pc.iceConnectionState:'-')+')':'mati'))+(LYc.room?' · TURN: '+(LYc.info||'memeriksa…')+(LYc.relay?' · mode relay':'')+' · kandidat: '+['host','srflx','relay'].map(x=>x+' '+((LYc.cnt||{})[x]||0)).join(', '):'');
+const aqTxt=()=>'Antrean upload: '+Q.length+' sesi · Layar: '+(LYc.dc&&LYc.dc.readyState=='open'?'terhubung':(LYc.room?'menunggu ('+(LYc.pc?LYc.pc.connectionState+'/'+LYc.pc.iceConnectionState:'-')+')':'mati'))+(LYc.room?' · TURN: '+(LYc.info||'memeriksa…')+(LYc.relay?' · mode relay':'')+' · kandidat: '+['host','srflx','relay'].map(x=>x+' '+((LYc.cnt||{})[x]||0)).join(', ')+' · jawaban layar: '+(LYc.ans||0)+(LYc.err?' · ERROR: '+LYc.err:''):'');
 setInterval(()=>{if($('#adm').classList.contains('show'))$('#aq').textContent=aqTxt()},1000);
 $('#po').onclick=()=>{if($('#pin').value!==K.pin){$('#pin').value='';return}$('#pinm').classList.remove('show');AF.forEach(([k])=>$('#a_'+k).value=K[k]);try{navigator.mediaDevices.enumerateDevices().then(ds=>{$('#camlist').innerHTML=ds.filter(d=>d.kind=='videoinput'&&d.label).map(d=>`<option value="${d.label.replace(/"/g,'')}">`).join('')})}catch(e){}$('#aq').textContent=aqTxt();$('#adm').classList.add('show')};
 $('#as').onclick=()=>{const oc=K.camf+'|'+K.camn+'|'+K.camres;AF.forEach(([k,,t])=>K[k]=t=='number'?Math.max(1,+$('#a_'+k).value||1):$('#a_'+k).value);try{localStorage.setItem('pbk',JSON.stringify(K))}catch(e){}if(stream&&oc!==K.camf+'|'+K.camn+'|'+K.camres){stream.getTracks().forEach(t=>t.stop());stream=null;$('#v').srcObject=null}$('#adm').classList.remove('show');init();flush()};
