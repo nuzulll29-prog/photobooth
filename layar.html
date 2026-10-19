@@ -71,21 +71,25 @@ async function getIce(){const now=Date.now();if(iceL&&now-iceT<36e5)return iceL;
   else{const j=await r.json();if(Array.isArray(j.iceServers)&&j.iceServers.length){l=l.concat(j.iceServers);iceL=l;iceT=now;D.turn=true;D.info='ada'}else D.info='kosong'+(j.err?' (Cloudflare '+j.err+')':' (secret belum terbaca Worker)')}}
  catch(e){D.info='gagal: '+(e.message||e)}
  return l}
-async function onMsg(m){
- if(m.offer){const ice=await getIce();D.l={};D.r={};try{pc&&pc.close()}catch(e){}sid=m.sid;const p=pc=new RTCPeerConnection({iceServers:ice});
+function mkPC(ice){const f=x=>x.map(s=>({...s,urls:[].concat(s.urls).filter(u=>!/^turns?:[^?]*:53(\?|$)/.test(u))})).filter(s=>s.urls.length);
+ for(const x of [ice,f(ice),[{urls:'stun:stun.l.google.com:19302'}]]){try{return new RTCPeerConnection({iceServers:x})}catch(e){D.err='RTC: '+(e.message||e)}}
+ return new RTCPeerConnection()}
+async function onMsg(m){try{await onMsg0(m)}catch(e){D.err=(m.offer?'tawaran: ':'pesan: ')+(e&&e.message||e)}}
+async function onMsg0(m){
+ if(m.offer){D.o=(D.o||0)+1;const ice=await getIce();D.l={};D.r={};try{pc&&pc.close()}catch(e){}sid=m.sid;const p=pc=mkPC(ice);
   p.ontrack=e=>{$('#v').srcObject=e.streams[0]||new MediaStream([e.track]);$('#v').play().catch(()=>{})};
   p.ondatachannel=e=>{e.channel.onmessage=ev=>rx(ev.data)};
   p.onicecandidate=e=>{if(e.candidate){const t=ct(e.candidate);D.l[t]=(D.l[t]||0)+1;post({sid:m.sid,c:e.candidate})}};
   p.onconnectionstatechange=()=>{if(p!==pc)return;const s=p.connectionState;
    if(s=='connected'){show('idle');$('#im').textContent='Ayo berfoto!'}
    else if(s=='failed'||s=='disconnected'||s=='closed'){show('wait');$('#st').textContent='Kamera terputus. Menghubungkan ulang…';setTimeout(()=>{my=hid();post({hello:my})},3000)}};
-  await p.setRemoteDescription(m.offer);await p.setLocalDescription(await p.createAnswer());post({sid:m.sid,answer:p.localDescription})}
+  await p.setRemoteDescription(m.offer);await p.setLocalDescription(await p.createAnswer());post({sid:m.sid,answer:p.localDescription});D.a=(D.a||0)+1}
  else if(m.c&&m.sid===sid&&pc){const t=ct(m.c);D.r[t]=(D.r[t]||0)+1;await pc.addIceCandidate(m.c).catch(()=>{})}}
 function start(){getIce();$('#cfg').style.display='none';$('#pair').style.display='';post({hello:my});
  t=setInterval(async()=>{if(pc&&pc.connectionState=='connected'&&++k%6)return;
   try{const r=await fetch(`${C.api.replace(/\/$/,'')}/photobooth/sig?room=${room}&for=b&after=${after}`,{headers:{'X-Kiosk-Key':C.key}}),j=await r.json();if(chk(j))return;
    for(const x of j.msgs||[]){after=Math.max(after,x.i);seen++;await onMsg(x.m)}
-   if(!pc||pc.connectionState!=='connected')stt(`Server terhubung ✓. Menunggu HP memakai kode ini… (pesan dari HP: ${seen}${pc?', sambungan: '+pc.connectionState+'/'+pc.iceConnectionState:''}) · TURN: ${D.info||'memeriksa…'} · kandidat layar: ${fmt(D.l)} · kandidat HP: ${fmt(D.r)}`)}catch(e){stt('Tidak ada koneksi ke server…')}},900)}
+   if(!pc||pc.connectionState!=='connected')stt(`Server terhubung ✓. Menunggu HP memakai kode ini… (pesan dari HP: ${seen}${pc?', sambungan: '+pc.connectionState+'/'+pc.iceConnectionState:''}) · TURN: ${D.info||'memeriksa…'} · kandidat layar: ${fmt(D.l)} · kandidat HP: ${fmt(D.r)} · tawaran HP: ${D.o||0}, jawaban: ${D.a||0}${D.err?' · ERROR: '+D.err:''}`)}catch(e){stt('Tidak ada koneksi ke server…')}},900)}
 if(C.api&&C.key)start();else{$('#cfg').style.display='flex';$('#pair').style.display='none'}
 $('#sv').onclick=()=>{C.api=$('#api').value.trim();C.key=$('#key').value.trim();if(!C.api||!C.key)return;sv();start()};
 </script></body></html>
