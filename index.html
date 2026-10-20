@@ -114,8 +114,8 @@ body.camfs #cerr{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
 <script>
 const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-const K={ev:'Photobooth',base:'https://example.com/ar',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000,cmode:'kasir',lyc:'',camn:'',camres:'',camf:'depan'};
-try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}
+const K={ev:'Photobooth',base:'https://nuzulll29-prog.github.io/photobooth/ar/',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000,cmode:'kasir',lyc:'',camn:'',camres:'',camf:'depan'};
+try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}if(/example\.com/.test(K.base||'')||!String(K.base||'').trim())K.base='https://nuzulll29-prog.github.io/photobooth/ar/';
 const LAY=[{n:1,c:1,ar:.75,name:'Single'},{n:2,c:1,ar:1.333,name:'Duo'},{n:3,c:1,ar:1.333,name:'Strip 3'},{n:4,c:2,ar:1,name:'Grid 4'},{n:4,c:1,ar:1.333,name:'Strip 4'},{n:6,c:2,ar:1,name:'Grid 6'}];
 const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:'Georgia, serif',stick:'💖✨',radius:18,border:6,gap:24,title:'Happy Moments'},
 {name:'Retro Film',bg:'#111111',accent:'#f5c542',text:'#ffffff',font:"'Courier New', monospace",stick:'🎞️',radius:0,border:8,gap:20,title:'FILM NIGHT'},
