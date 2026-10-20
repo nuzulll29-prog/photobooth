@@ -27,7 +27,7 @@ const base=`${API}/photobooth/pub/${id}`;
  if(!/^[\w-]+$/.test(id))return T('Link tidak valid. Scan ulang QR di cetakanmu.');
  const r=await fetch(base+'/manifest.json');if(!r.ok)return T('Foto tidak ditemukan. Scan ulang QR di cetakanmu.');
  const m=await r.json(),A=m.print.aspect,tm=base+'/target.mind';
- if(!(await fetch(tm,{method:'HEAD'})).ok)return T('Video masih diproses. Coba lagi dalam 1–2 menit ya.');
+ if(!(await fetch(tm,{headers:{Range:'bytes=0-0'}})).ok)return T('Video masih diproses. Coba lagi dalam 1–2 menit ya.'); // cek file ada; Worker hanya melayani GET (HEAD ditolak)
  const mind=new MindARThree({container:$('#c'),imageTargetSrc:tm,uiLoading:'no',uiScanning:'no',uiError:'no'});
  const {renderer,scene,camera}=mind,anchor=mind.addAnchor(0),vids=[];
  for(const s of m.slots){if(!s.video)continue;
