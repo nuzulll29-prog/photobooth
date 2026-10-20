@@ -48,17 +48,19 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <div class="pg show w" id="p0"><h1 id="ush">Kasir</h1>
 <label>Nama pelanggan</label><input id="nm" autocomplete="off" autocapitalize="words">
 <div class="row"><div><label>WhatsApp</label><input id="wa" inputmode="tel" placeholder="08xxxxxxxxxx"></div><div><label>Email (opsional)</label><input id="em" type="email" autocapitalize="none"></div></div>
+<div id="tpw" style="display:none"><label>Paket / jenis strip</label><div class="row chips" id="tp" style="flex-wrap:wrap"></div></div>
 <label>Jumlah cetak</label><div class="step"><button id="mn">−</button><b id="pc">1</b><button id="pl">+</button></div>
 <label>Metode bayar</label><div class="row chips" id="mt"><button data-m="tunai" class="on">Tunai</button><button data-m="qris">QRIS</button><button data-m="transfer">Transfer</button></div>
 <div id="cash"><label>Uang diterima</label><input id="by" type="number" inputmode="numeric"></div>
-<div class="rc"><div class="l"><span id="l1"></span><span id="v1"></span></div><div class="l"><span>Biaya sesi</span><span id="v2"></span></div><div class="l"><span id="l3">Kembalian</span><span id="v3">Rp0</span></div><div class="t"><span>Total</span><b id="tt">Rp0</b></div></div>
+<div class="rc"><div class="l"><span id="l1"></span><span id="v1"></span></div><div class="l" id="r4"><span id="l4"></span><span id="v4"></span></div><div class="l" id="r2"><span>Biaya sesi</span><span id="v2"></span></div><div class="l"><span id="l3">Kembalian</span><span id="v3">Rp0</span></div><div class="t"><span>Total</span><b id="tt">Rp0</b></div></div>
 <div class="row"><button id="bl">Simpan belum bayar</button><button class="p" id="ls">Terima & simpan</button></div></div>
 
 <div class="pg w" id="p1"><h1>Pesanan</h1><div class="kb"><div><b id="k1">0</b><span>Omzet hari ini</span></div><div><b id="k2">0</b><span>Pesanan</span></div><div><b id="k3">0</b><span>Total cetak</span></div></div>
 <input id="q" placeholder="Cari nama atau kode order" autocapitalize="none"><h2 id="lh">Hari ini</h2><div id="ol"></div></div>
 
 <div class="pg w" id="p2"><h1>Pengaturan</h1>
-<label>Nama usaha / booth</label><input id="s_usaha"><div class="row"><div><label>Biaya sesi (Rp)</label><input id="s_fee" type="number" inputmode="numeric"></div><div><label>Harga per cetak (Rp)</label><input id="s_unit" type="number" inputmode="numeric"></div></div>
+<label>Nama usaha / booth</label><input id="s_usaha"><div class="row"><div><label>Biaya sesi, ditambah ke semua paket (Rp)</label><input id="s_fee" type="number" inputmode="numeric"></div><div><label>Harga per cetak (dipakai jika daftar paket kosong)</label><input id="s_unit" type="number" inputmode="numeric"></div></div>
+<label>Daftar paket. Satu baris satu paket: Nama | harga cetak pertama | harga tiap tambah cetak</label><textarea id="s_tiers" rows="5" placeholder="Strip 3 foto | 25000 | 5000&#10;Strip 4 foto | 30000 | 5000&#10;Strip 6 foto | 40000 | 10000" autocapitalize="none"></textarea>
 <label>URL halaman viewer (sama dengan kiosk)</label><input id="s_base" autocapitalize="none">
 <label>Pola link unduh file, pakai {id}</label><input id="s_dl" placeholder="https://files.domainmu.com/photobooth/{id}/print.png" autocapitalize="none">
 <label>Pesan WA / email. Pakai {nama} {kode} {link} {usaha}</label><textarea id="s_msg" rows="5"></textarea>
@@ -78,10 +80,14 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <script>
 const $=s=>$$(s)[0],$$=s=>document.querySelectorAll(s),rp=n=>'Rp'+(+n||0).toLocaleString('id-ID'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let C={};try{C=JSON.parse(localStorage.pbc||'{}')}catch(e){}
-let sb,pr=1,mth='tunai',LAST,S={usaha:'Photobooth',fee:'0',unit:'10000',base:'',dl:'',msg:'Halo {nama}! Foto dari {usaha} (kode {kode}) sudah siap:\n{link}\nTerima kasih sudah berfoto 💖'};
+let sb,pr=1,mth='tunai',LAST,S={usaha:'Photobooth',fee:'0',unit:'10000',tiers:'',base:'',dl:'',msg:'Halo {nama}! Foto dari {usaha} (kode {kode}) sudah siap:\n{link}\nTerima kasih sudah berfoto 💖'};
 const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',2600)};
-const tot=()=>(+S.fee||0)+pr*(+S.unit||0);
-function calc(){const t=tot(),by=+$('#by').value||0;$('#pc').textContent=pr;$('#l1').textContent=pr+' cetak × '+rp(S.unit);$('#v1').textContent=rp(pr*S.unit);$('#v2').textContent=rp(S.fee);$('#tt').textContent=rp(t);
+let ti=0;const num=v=>+String(v==null?'':v).replace(/[^\d]/g,'')||0;
+const tierList=()=>String(S.tiers||'').split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]&&a[1]).map(a=>{const b=num(a[1]);return{n:a[0],b,e:a[2]?num(a[2]):b}});
+const cur=()=>{const L=tierList();if(!L.length){const u=+S.unit||0;return{n:'',b:u,e:u}}return L[Math.min(ti,L.length-1)]};
+const tot=()=>{const c=cur();return(+S.fee||0)+c.b+(pr-1)*c.e};
+function tpRender(){const L=tierList();$('#tpw').style.display=L.length?'':'none';if(ti>=L.length)ti=0;$('#tp').innerHTML=L.map((c,i)=>`<button data-i="${i}" class="${i==ti?'on':''}" style="flex:1 1 40%">${esc(c.n)}<br><small>${rp(c.b)}${c.e!=c.b?' · +'+rp(c.e):''}</small></button>`).join('');$$('#tp button').forEach(b=>b.onclick=()=>{ti=+b.dataset.i;$$('#tp button').forEach(x=>x.classList.toggle('on',x==b));calc()})}
+function calc(){const c=cur(),t=tot(),by=+$('#by').value||0;$('#pc').textContent=pr;$('#l1').textContent=c.n?c.n+' (cetak pertama)':'Cetak pertama';$('#v1').textContent=rp(c.b);$('#r4').style.display=pr>1?'':'none';$('#l4').textContent=(pr-1)+' tambah cetak × '+rp(c.e);$('#v4').textContent=rp((pr-1)*c.e);$('#r2').style.display=(+S.fee)?'':'none';$('#v2').textContent=rp(S.fee);$('#tt').textContent=rp(t);
  $('#cash').style.display=mth=='tunai'?'':'none';const k=by-t;$('#l3').textContent=k<0&&mth=='tunai'?'Kurang':'Kembalian';$('#v3').textContent=mth=='tunai'?rp(Math.abs(k)):'-'}
 $('#mn').onclick=()=>{pr=Math.max(1,pr-1);calc()};$('#pl').onclick=()=>{pr=Math.min(50,pr+1);calc()};$('#by').oninput=calc;
 $$('#mt button').forEach(b=>b.onclick=()=>{mth=b.dataset.m;$$('#mt button').forEach(x=>x.classList.toggle('on',x==b));calc()});
@@ -89,16 +95,16 @@ $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classLi
 
 async function enter(){try{Object.assign(S,JSON.parse(localStorage.pbs||'{}'))}catch(e){}
  try{if(navigator.onLine){const {data}=await sb.from('settings').select('*');if(data&&data.length){data.forEach(r=>S[r.key]=r.value);localStorage.pbs=JSON.stringify(S)}}}catch(e){}
- ['usaha','fee','unit','base','dl','msg'].forEach(k=>$('#s_'+k).value=S[k]);$('#ush').textContent=S.usaha;$('#l_api').value=LC.api||'';$('#l_key').value=LC.key||'';$('#l_cm').value=LC.cm||'5x15';$('#l_cm6').value=LC.cm6||LC.cm||'5x15';$('#l_pfx').value=LC.pfx??'A';try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}$('#lg').style.display='none';$('#ap').style.display='block';calc();mxRefresh();sync()}
+ ['usaha','fee','unit','tiers','base','dl','msg'].forEach(k=>$('#s_'+k).value=S[k]||'');$('#ush').textContent=S.usaha;$('#l_api').value=LC.api||'';$('#l_key').value=LC.key||'';$('#l_cm').value=LC.cm||'5x15';$('#l_cm6').value=LC.cm6||LC.cm||'5x15';$('#l_pfx').value=LC.pfx??'A';try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}$('#lg').style.display='none';$('#ap').style.display='block';tpRender();calc();mxRefresh();sync()}
 function mk(){if(!C.url||!C.key)return false;sb=supabase.createClient(C.url,C.key);return true}
 $('#lb').onclick=async()=>{C={url:$('#su').value.trim(),key:$('#sk').value.trim()};if(!mk())return toast('Isi URL dan anon key');
  const {error}=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});if(error)return toast('Gagal masuk: '+error.message);localStorage.pbc=JSON.stringify(C);localStorage.pbstaff='1';enter()};
 $('#lo').onclick=async()=>{if((PQ.o.length||PQ.p.length)&&!confirm('Masih ada data offline yang belum sinkron. Keluar tetap?'))return;localStorage.removeItem('pbstaff');await sb.auth.signOut().catch(()=>{});location.reload()};
-$('#ss').onclick=async()=>{LC={...LC,api:$('#l_api').value.trim().replace(/\/+$/,''),key:$('#l_key').value.trim(),cm:$('#l_cm').value.trim()||'5x15',cm6:$('#l_cm6').value.trim()||'5x15',pfx:$('#l_pfx').value.trim()};localStorage.pbl=JSON.stringify(LC);const rows=['usaha','fee','unit','base','dl','msg'].map(k=>({key:k,value:$('#s_'+k).value.trim()}));const {error}=await sb.from('settings').upsert(rows);if(error)return toast(error.message);rows.forEach(r=>S[r.key]=r.value);localStorage.pbs=JSON.stringify(S);$('#ush').textContent=S.usaha;calc();toast('Pengaturan disimpan')};
+$('#ss').onclick=async()=>{LC={...LC,api:$('#l_api').value.trim().replace(/\/+$/,''),key:$('#l_key').value.trim(),cm:$('#l_cm').value.trim()||'5x15',cm6:$('#l_cm6').value.trim()||'5x15',pfx:$('#l_pfx').value.trim()};localStorage.pbl=JSON.stringify(LC);const rows=['usaha','fee','unit','tiers','base','dl','msg'].map(k=>({key:k,value:$('#s_'+k).value.trim()}));const {error}=await sb.from('settings').upsert(rows);if(error)return toast(error.message);rows.forEach(r=>S[r.key]=r.value);localStorage.pbs=JSON.stringify(S);$('#ush').textContent=S.usaha;tpRender();calc();toast('Pengaturan disimpan')};
 
 async function save(lunas){const nama=$('#nm').value.trim();if(!nama)return toast('Isi nama pelanggan');const t=tot();
  if(lunas&&mth=='tunai'&&(+$('#by').value||0)<t)return toast('Uang diterima kurang');
- const pf=pfxOf();let o={pfx:pf,nama,wa:$('#wa').value.trim(),email:$('#em').value.trim(),prints:pr,unit_price:+S.unit||0,session_fee:+S.fee||0,total:t,method:mth,paid:lunas?t:0,status:lunas?'lunas':'belum',printed:false,created_at:new Date().toISOString()},res;
+ const pf=pfxOf();let o={pfx:pf,nama,wa:$('#wa').value.trim(),email:$('#em').value.trim(),prints:pr,unit_price:cur().e,session_fee:t-pr*cur().e,total:t,method:mth,paid:lunas?t:0,status:lunas?'lunas':'belum',printed:false,created_at:new Date().toISOString()},res;
  for(let k=0;k<8;k++){o.seq=Math.max(MX[pf]||0,...PQ.o.filter(x=>x.pfx==pf).map(x=>x.seq))+1;o.code=pf+o.seq;res=await tryInsert(o);if(res=='dup'){setMx(pf,o.seq);await mxRefresh();continue}break}
  if(res=='err')return;if(res=='dup')return toast('Gagal membuat kode order');
  setMx(pf,o.seq);if(res=='net'){PQ.o.push(o);pqs()}
@@ -107,7 +113,7 @@ $('#ls').onclick=()=>save(true);$('#bl').onclick=()=>save(false);
 $('#dx').onclick=()=>{$('#dn').classList.remove('show');['nm','wa','em','by'].forEach(i=>$('#'+i).value='');pr=1;calc()};
 $('#dp').onclick=()=>receipt(LAST);$('#dw').onclick=()=>sendTo(LAST,'wa');
 
-function receipt(o){const by=+$('#by').value||0;$('#rcp').innerHTML=`<div style="justify-content:center"><b>${esc(S.usaha)}</b></div><div style="justify-content:center">${new Date(o.created_at).toLocaleString('id-ID')}</div><hr><div><span>Kode</span><b>${esc(o.code)}</b></div><div><span>Nama</span><span>${esc(o.nama)}</span></div><hr><div><span>${o.prints} cetak × ${rp(o.unit_price)}</span><span>${rp(o.prints*o.unit_price)}</span></div>${o.session_fee?`<div><span>Biaya sesi</span><span>${rp(o.session_fee)}</span></div>`:''}<div><b>TOTAL</b><b>${rp(o.total)}</b></div><div><span>Bayar (${o.method})</span><span>${o.status=='lunas'?'LUNAS':'BELUM'}</span></div><hr><div style="justify-content:center">Terima kasih 💖</div>`;setTimeout(()=>window.print(),80)}
+function receipt(o){const by=+$('#by').value||0;$('#rcp').innerHTML=`<div style="justify-content:center"><b>${esc(S.usaha)}</b></div><div style="justify-content:center">${new Date(o.created_at).toLocaleString('id-ID')}</div><hr><div><span>Kode</span><b>${esc(o.code)}</b></div><div><span>Nama</span><span>${esc(o.nama)}</span></div><hr><div><span>${o.prints>1?'Cetak pertama':'1 cetak'}</span><span>${rp(o.total-(o.prints-1)*o.unit_price)}</span></div>${o.prints>1?`<div><span>${o.prints-1} tambah cetak × ${rp(o.unit_price)}</span><span>${rp((o.prints-1)*o.unit_price)}</span></div>`:''}<div><b>TOTAL</b><b>${rp(o.total)}</b></div><div><span>Bayar (${o.method})</span><span>${o.status=='lunas'?'LUNAS':'BELUM'}</span></div><hr><div style="justify-content:center">Terima kasih 💖</div>`;setTimeout(()=>window.print(),80)}
 
 async function load(){const q=$('#q').value.trim().replace(/[%,()]/g,''),s=new Date();s.setHours(0,0,0,0);
  let td=null;if(sb&&navigator.onLine){const r=await sb.from('orders').select('*').gte('created_at',s.toISOString()).order('created_at',{ascending:false});if(!r.error){td=r.data;localStorage.pbt=JSON.stringify(td)}}
