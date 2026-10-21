@@ -107,14 +107,14 @@ body.camfs #cerr{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
 </div>
 <img id="pimg" alt="">
 <div class="mod" id="pinm"><div class="box"><b>Mode staff</b><input type="password" id="pin" inputmode="numeric" placeholder="PIN"><div class="nav"><button class="btn sm" id="pc">Batal</button><button class="btn sm pri" id="po">Masuk</button></div></div></div>
-<div class="mod" id="adm"><div class="box"><b>Pengaturan staff</b><div id="af" style="display:flex;flex-direction:column;gap:10px"></div><div class="mut" id="aq"></div>
+<div class="mod" id="adm"><div class="box"><b>Pengaturan staff</b><div id="af" style="display:flex;flex-direction:column;gap:10px"></div><div style="margin-top:12px"><div class="mut" style="margin-bottom:6px">Pilihan layout di kiosk (tekan untuk nyala atau mati)</div><div id="lons" style="display:flex;flex-wrap:wrap;gap:8px"></div></div><div class="mut" id="aq"></div>
  <div class="nav"><button class="btn sm" id="apk">Unduh paket sesi terakhir</button><button class="btn sm pri" id="as">Simpan & tutup</button></div></div></div>
 <div class="mod" id="arm"><div class="box" style="padding:0;background:#000;position:relative"><button class="btn sm" id="mx" style="position:absolute;right:8px;top:8px;z-index:2">✕</button><video id="mv" playsinline controls loop></video></div></div>
 
 <script>
 const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
 if(!CanvasRenderingContext2D.prototype.roundRect)CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath()};
-const K={ev:'Photobooth',base:'https://nuzulll29-prog.github.io/photobooth/ar/',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000,cmode:'kasir',lyc:'',camn:'',camres:'',camf:'depan'};
+const K={lon:['Single','Duo','Strip 3','Grid 4','Strip 4','Grid 6'],ev:'Photobooth',base:'https://nuzulll29-prog.github.io/photobooth/ar/',api:'',key:'',cm34:'5x15',cm6:'5x15',mind:'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js',foot:'',cd:3,idle:60,pin:'1234',tgt:1000,cmode:'kasir',lyc:'',camn:'',camres:'',camf:'depan'};
 try{Object.assign(K,JSON.parse(localStorage.getItem('pbk')||'{}'))}catch(e){}if(/example\.com/.test(K.base||'')||!String(K.base||'').trim())K.base='https://nuzulll29-prog.github.io/photobooth/ar/';
 const LAY=[{n:1,c:1,ar:.75,name:'Single'},{n:2,c:1,ar:1.333,name:'Duo'},{n:3,c:1,ar:1.333,name:'Strip 3'},{n:4,c:2,ar:1,name:'Grid 4'},{n:4,c:1,ar:1.333,name:'Strip 4'},{n:6,c:2,ar:1,name:'Grid 6'}];
 const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:'Georgia, serif',stick:'💖✨',radius:18,border:6,gap:24,title:'Happy Moments'},
@@ -132,7 +132,8 @@ const TPL=[{name:'Pink Manis',bg:'#fff1f5',accent:'#e0457b',text:'#5a2a3a',font:
 const SW=['#e0457b','#ff7a45','#f5b301','#3fae6a','#3b82f6','#8b5cf6'],POSE=['Senyum! 😄','Pose lucu! 🤪','Gaya bebas! 😎','Peluk teman! 🤗','Ekspresi kaget! 😲','Tebar pesona! 😍'];
 let MIR=true,ST,stream=null,demo=false,busy=false,rects=[],last=Date.now(),scr=0,press,LAST=null,Q=[],flushing=false;
 const defTpl=()=>TPL.find(t=>t.ok)||TPL[0];
-const newSes=()=>ST={lay:LAY[2],tpl:defTpl(),accent:null,title:'',id:Math.random().toString(36).slice(2,10),nama:'',photos:[],pb:[],vids:[],vb:[],ex:[],cur:-1,todo:[]};
+const layOn=()=>{const a=LAY.filter(L=>(K.lon||[]).includes(L.name));return a.length?a:LAY};
+const newSes=()=>{const L=layOn().includes(LAY[2])?LAY[2]:layOn()[0];ST={lay:L,tpl:defTpl(),accent:null,title:'',id:Math.random().toString(36).slice(2,10),nama:'',photos:[],pb:[],vids:[],vb:[],ex:[],cur:-1,todo:[]};if(ST.tpl.slots&&(L.n!=ST.tpl.slots.length||L.c!=ST.tpl.c))ST.tpl=TPL.find(t=>t.slots&&t.ok&&t.slots.length==L.n&&t.c==L.c)||TPL.find(t=>!t.slots)||TPL[0];return ST};
 newSes();
 let dflt=false;
 Promise.allSettled(TPL.filter(t=>t.img).map(t=>new Promise((res,rej)=>{t.im=new Image();t.im.onload=()=>{t.ok=true;res()};t.im.onerror=rej;t.im.src=t.img}))).then(()=>{if(!dflt&&ST.tpl===TPL[0]&&scr<3&&!ST.photos.some(Boolean)){ST.tpl=TPL.find(t=>t.ok)||TPL[0];dflt=true}buildTpl()});
@@ -157,7 +158,7 @@ $('#nn').onclick=async()=>{const c=cleanNama($('#nm').value).toUpperCase(),id=mk
 $('#nskip').onclick=()=>{ST.nama='';ST.id=mkId('');$('#nm').value='';go(1)};
 $('#nm').onkeydown=e=>{if(e.key==='Enter')$('#nn').click()};
 
-function buildLay(){const el=$('#lay');el.innerHTML='';LAY.forEach(L=>{const d=document.createElement('div');d.className='card'+(L==ST.lay?' sel':'');
+function buildLay(){const el=$('#lay');el.innerHTML='';layOn().forEach(L=>{const d=document.createElement('div');d.className='card'+(L==ST.lay?' sel':'');
  d.innerHTML=`<div class="mini" style="grid-template-columns:repeat(${L.c},1fr);width:${L.c==1?46:80}px">${('<i style="aspect-ratio:'+L.ar+'"></i>').repeat(L.n)}</div><b>${L.name}</b><div class="mut">${L.n} foto</div>`;
  d.onclick=()=>{if(L.n!=ST.lay.n){ST.photos=[];ST.pb=[];ST.vids=[];ST.vb=[];ST.ex=[]}ST.lay=L;if(ST.tpl.slots&&(L.n!=ST.tpl.slots.length||L.c!=ST.tpl.c)){ST.tpl=TPL.find(t=>t.slots&&t.ok&&t.slots.length==L.n&&t.c==L.c)||TPL[0]}buildLay()};el.appendChild(d)})}
 function buildTpl(){const el=$('#tpl');el.innerHTML='';let hid=false;
@@ -348,6 +349,8 @@ if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch((
 const dl=(h,n)=>{const a=document.createElement('a');a.href=h;a.download=n;document.body.appendChild(a);a.click();a.remove()};
 
 // staff mode
+let LS=new Set();
+function lonDraw(){$('#lons').innerHTML=LAY.map(L=>`<button class="btn sm${LS.has(L.name)?' pri':''}" data-n="${L.name}">${L.name}: ${LS.has(L.name)?'Nyala':'Mati'}</button>`).join('');document.querySelectorAll('#lons button').forEach(b=>b.onclick=()=>{const n=b.dataset.n;if(LS.has(n)){if(LS.size<=1){alert('Minimal satu layout harus nyala.');return}LS.delete(n)}else LS.add(n);lonDraw()})}
 const AF=[['ev','Nama acara / booth','text'],['base','URL halaman viewer (isi QR)','text'],['api','URL Worker (hm-backend)','text'],['key','Kunci kiosk','password'],['cm34','Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)','text'],['cm6','Ukuran cetak 6 grid (cm, lebar x tinggi)','text'],['mind','URL library kompilasi target (versi harus sama dengan viewer)','text'],['foot','Teks bawah judul (kosong = tanggal)','text'],['cd','Hitung mundur (detik)','number'],['idle','Reset otomatis (detik)','number'],['camres','Resolusi kamera (mis. 1920x1080; kosongkan = 1280x960)','text'],['camf','Kamera (depan / belakang)','text'],['camn','Nama kamera (kosongkan = ikut pilihan depan/belakang; pilih dari daftar)','text'],['lyc','Kode layar penampil (dari laptop; kosongkan jika tidak dipakai)','text'],['cmode','Kompilasi video AR dikerjakan di (kasir / kiosk)','text'],['tgt','Resolusi target AR (sisi panjang px, 800-1500; kecil = kompilasi lebih cepat)','number'],['pin','PIN staff','text']];
 AF.forEach(([k,l,t])=>{$('#af').insertAdjacentHTML('beforeend',`<label>${l}</label><input id="a_${k}" type="${t}">`)});{const o=$('#a_camf');o.outerHTML='<select id="a_camf"><option value="depan">Depan (selfie, dicerminkan)</option><option value="belakang">Belakang (tidak dicerminkan)</option></select>'}$('#af').insertAdjacentHTML('beforeend','<datalist id="camlist"></datalist>');$('#a_camn').setAttribute('list','camlist');
 $('#logo').onpointerdown=()=>{press=setTimeout(()=>{$('#pin').value='';$('#pinm').classList.add('show')},1500)};
@@ -359,8 +362,8 @@ function mkPC(ice,pol){const f=x=>x.map(s=>({...s,urls:[].concat(s.urls).filter(
 function relayOn(){LYc.relay=true;try{localStorage.setItem('pbrelay','1')}catch(e){}}
 const aqTxt=()=>'Antrean upload: '+Q.length+' sesi · Layar: '+(LYc.dc&&LYc.dc.readyState=='open'?'terhubung':(LYc.room?'menunggu ('+(LYc.pc?LYc.pc.connectionState+'/'+LYc.pc.iceConnectionState:'-')+')':'mati'))+(LYc.room?' · TURN: '+(LYc.info||'memeriksa…')+(LYc.relay?' · mode relay':'')+' · kandidat: '+['host','srflx','relay'].map(x=>x+' '+((LYc.cnt||{})[x]||0)).join(', ')+' · jawaban layar: '+(LYc.ans||0)+(LYc.err?' · ERROR: '+LYc.err:''):'');
 setInterval(()=>{if($('#adm').classList.contains('show'))$('#aq').textContent=aqTxt()},1000);
-$('#po').onclick=()=>{if($('#pin').value!==K.pin){$('#pin').value='';return}$('#pinm').classList.remove('show');AF.forEach(([k])=>$('#a_'+k).value=K[k]);try{navigator.mediaDevices.enumerateDevices().then(ds=>{$('#camlist').innerHTML=ds.filter(d=>d.kind=='videoinput'&&d.label).map(d=>`<option value="${d.label.replace(/"/g,'')}">`).join('')})}catch(e){}$('#aq').textContent=aqTxt();$('#adm').classList.add('show')};
-$('#as').onclick=()=>{const oc=K.camf+'|'+K.camn+'|'+K.camres;AF.forEach(([k,,t])=>K[k]=t=='number'?Math.max(1,+$('#a_'+k).value||1):$('#a_'+k).value);try{localStorage.setItem('pbk',JSON.stringify(K))}catch(e){}if(stream&&oc!==K.camf+'|'+K.camn+'|'+K.camres){stream.getTracks().forEach(t=>t.stop());stream=null;$('#v').srcObject=null}$('#adm').classList.remove('show');init();flush()};
+$('#po').onclick=()=>{if($('#pin').value!==K.pin){$('#pin').value='';return}$('#pinm').classList.remove('show');AF.forEach(([k])=>$('#a_'+k).value=K[k]);LS=new Set(layOn().map(L=>L.name));lonDraw();try{navigator.mediaDevices.enumerateDevices().then(ds=>{$('#camlist').innerHTML=ds.filter(d=>d.kind=='videoinput'&&d.label).map(d=>`<option value="${d.label.replace(/"/g,'')}">`).join('')})}catch(e){}$('#aq').textContent=aqTxt();$('#adm').classList.add('show')};
+$('#as').onclick=()=>{const oc=K.camf+'|'+K.camn+'|'+K.camres;K.lon=LAY.map(L=>L.name).filter(n=>LS.has(n));AF.forEach(([k,,t])=>K[k]=t=='number'?Math.max(1,+$('#a_'+k).value||1):$('#a_'+k).value);try{localStorage.setItem('pbk',JSON.stringify(K))}catch(e){}if(stream&&oc!==K.camf+'|'+K.camn+'|'+K.camres){stream.getTracks().forEach(t=>t.stop());stream=null;$('#v').srcObject=null}$('#adm').classList.remove('show');init();flush();if(!layOn().includes(ST.lay))reset();else buildLay()};
 $('#apk').onclick=async()=>{const s=LAST;if(!s)return;dl(URL.createObjectURL(new Blob([JSON.stringify(s.pack.manifest,null,2)],{type:'application/json'})),`${s.id}_manifest.json`);
  await sleep(350);dl(URL.createObjectURL(s.pack.print),`${s.id}_print.png`);await sleep(350);dl(URL.createObjectURL(s.pack.target),`${s.id}_target.jpg`);const mb=await s.pack.mindP;if(mb){await sleep(350);dl(URL.createObjectURL(mb),`${s.id}_target.mind`)}
  for(let i=0;i<s.lay.n;i++){if(s.pb[i]){await sleep(350);dl(URL.createObjectURL(s.pb[i]),`${s.id}_foto-${i+1}.jpg`)}if(s.vb[i]){await sleep(350);dl(s.vids[i],`${s.id}_bts-${i+1}.${s.ex[i]}`)}}};
