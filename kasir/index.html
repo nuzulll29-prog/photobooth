@@ -56,6 +56,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <div class="row"><button id="bl">Simpan belum bayar</button><button class="p" id="ls">Terima & simpan</button></div></div>
 
 <div class="pg w" id="p1"><h1>Pesanan</h1><div class="kb"><div><b id="k1">0</b><span>Omzet hari ini</span></div><div><b id="k2">0</b><span>Pesanan</span></div><div><b id="k3">0</b><span>Total cetak</span></div></div>
+<button class="s" id="rkt" style="width:100%;margin-bottom:8px">Rekap pesanan</button><div class="od" id="rkp" style="display:none"><label>Rentang waktu</label><select id="rkr"><option value="td">Hari ini</option><option value="yd">Kemarin</option><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="mo">Bulan ini</option></select><div id="rko" style="margin-top:10px;font-size:15px"></div><button class="s" id="rkc" style="margin-top:8px">Salin rekap</button></div>
 <input id="q" placeholder="Cari nama atau kode order" autocapitalize="none"><h2 id="lh">Hari ini</h2><div id="ol"></div></div>
 
 <div class="pg w" id="p2"><h1>Pengaturan</h1>
@@ -74,6 +75,12 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <nav><button data-p="0" class="on">Kasir</button><button data-p="1">Pesanan</button><button data-p="3">Cetak</button><button data-p="4">AR</button><button data-p="2">Atur</button></nav></div>
 
 <div class="mod" id="dn"><div class="b"><div>Pesanan tersimpan</div><div class="code" id="dc"></div><div class="row"><button id="dp">Cetak struk</button><button id="dw" class="p">Kirim WA</button></div><br><button id="dx" style="width:100%">Pesanan baru</button><p id="dh" style="font-size:13px;color:var(--mut);margin:12px 0 0"></p></div></div>
+<div class="mod" id="edm"><div class="b" style="max-height:90vh;overflow:auto"><div style="font-weight:800" id="edt">Edit pesanan</div>
+<label>Jumlah cetak</label><div class="step"><button id="edmn">−</button><b id="edn">1</b><button id="edp">+</button></div>
+<label>Metode bayar</label><div class="row chips" id="edmt"><button data-m="tunai">Tunai</button><button data-m="qris">QRIS</button><button data-m="transfer">Transfer</button></div>
+<label>Status pembayaran</label><div class="row chips" id="eds"><button data-s="lunas">Lunas</button><button data-s="belum">Belum bayar</button></div>
+<label>Total (Rp), bisa diubah manual</label><input id="edto" type="number" inputmode="numeric">
+<div class="row" style="margin-top:14px"><button id="edc">Batal</button><button id="edsv" class="p">Simpan</button></div></div></div>
 <div class="mod" id="pvm"><div class="b" style="max-width:520px"><div id="pvi" style="margin-bottom:8px;font-size:14px"></div><div id="pvb"></div><div class="row" style="margin-top:10px"><button id="pvx">Tutup</button><button id="pvd">Unduh PDF</button><button class="p" id="pvp">Cetak</button></div><p style="font-size:12px;color:var(--mut);margin:8px 0 0">Di dialog cetak: pilih ukuran kertas yang sesuai (4R = 4×6 inci, atau A4), skala 100% (jangan "Sesuaikan ke halaman"), margin Tidak ada.</p></div></div><div id="sheet"></div>
 <div id="rcp"></div><div id="toast"></div>
 
@@ -122,11 +129,44 @@ async function load(){const q=$('#q').value.trim().replace(/[%,()]/g,''),s=new D
  const L=mg(td);$('#k1').textContent=rp(L.filter(o=>o.status=='lunas').reduce((a,o)=>a+o.total,0));$('#k2').textContent=L.length;$('#k3').textContent=L.reduce((a,o)=>a+o.prints,0);
  let R=L;$('#lh').textContent='Hari ini';if(q){const ql=q.toLowerCase();let B=td;if(sb&&navigator.onLine){const r=await sb.from('orders').select('*').or(`nama.ilike.%${q}%,code.ilike.%${q}%`).order('created_at',{ascending:false}).limit(50);if(!r.error)B=r.data||[]}R=mg(B).filter(o=>(o.nama+' '+o.code).toLowerCase().includes(ql));$('#lh').textContent='Hasil pencarian'}
  $('#ol').innerHTML=R.length?R.map(o=>`<div class="od" data-i="${o.id}"><div class="h"><div><div class="c">${esc(o.code)}</div><div>${esc(o.nama)}</div><div class="m">${o.prints} cetak · ${esc(o.method)} · ${rp(o.total)}${o.sent_at?' · file terkirim':''}${o.printed?' · tercetak':''}${o.local?' · belum sinkron':''}${o.konflik?' · KODE BENTROK':''}</div></div><span class="tg ${o.status}">${o.status}</span></div>
- <div class="ac"><button class="s" data-a="wa">Kirim WA</button><button class="s" data-a="em">Kirim email</button><button class="s" data-a="pr">${o.printed?'Batal tercetak':'Tandai tercetak'}</button><button class="s" data-a="rc">Struk</button>${o.status=='belum'?'<button class="s p" data-a="ln">Lunasi</button>':''}</div></div>`).join(''):'<p class="m" style="color:var(--mut)">Belum ada pesanan.</p>';
+ <div class="ac"><button class="s" data-a="wa">Kirim WA</button><button class="s" data-a="em">Kirim email</button><button class="s" data-a="pr">${o.printed?'Batal tercetak':'Tandai tercetak'}</button><button class="s" data-a="rc">Struk</button><button class="s" data-a="ed">Edit</button>${o.status=='belum'?'<button class="s p" data-a="ln">Lunasi</button>':''}</div></div>`).join(''):'<p class="m" style="color:var(--mut)">Belum ada pesanan.</p>';
  $$('#ol .od').forEach(e=>{const o=R.find(x=>x.id==e.dataset.i);e.querySelector('.h').onclick=()=>e.classList.toggle('open');
-  e.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{const a=b.dataset.a;if(a=='wa'||a=='em')return sendTo(o,a);if(a=='rc')return receipt(o);
-   applyPatch(o,a=='pr'?{printed:!o.printed}:{status:'lunas',paid:o.total})})})}
+  e.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{const a=b.dataset.a;if(a=='wa'||a=='em')return sendTo(o,a);if(a=='rc')return receipt(o);if(a=='ed')return edOpen(o);
+   applyPatch(o,a=='pr'?{printed:!o.printed}:{status:'lunas',paid:o.total})})})
+ if($('#rkp').style.display!='none')rekap()}
 $('#q').oninput=()=>{clearTimeout($('#q').t);$('#q').t=setTimeout(load,350)};
+
+// ===== Edit pesanan =====
+let EO=null,EN=1,EM='tunai',ES='lunas';
+const eFirst=o=>o.total-(o.prints-1)*o.unit_price,eCalc=()=>eFirst(EO)+(EN-1)*EO.unit_price;
+function edDraw(){$('#edn').textContent=EN;$$('#edmt button').forEach(b=>b.classList.toggle('on',b.dataset.m==EM));$$('#eds button').forEach(b=>b.classList.toggle('on',b.dataset.s==ES))}
+function edOpen(o){EO=o;EN=o.prints;EM=o.method||'tunai';ES=o.status=='lunas'?'lunas':'belum';$('#edt').textContent='Edit '+o.code+' · '+o.nama;$('#edto').value=o.total;edDraw();$('#edm').classList.add('show')}
+$('#edmn').onclick=()=>{if(EN>1){EN--;$('#edto').value=eCalc();edDraw()}};
+$('#edp').onclick=()=>{EN++;$('#edto').value=eCalc();edDraw()};
+$$('#edmt button').forEach(b=>b.onclick=()=>{EM=b.dataset.m;edDraw()});
+$$('#eds button').forEach(b=>b.onclick=()=>{ES=b.dataset.s;edDraw()});
+$('#edc').onclick=()=>$('#edm').classList.remove('show');
+$('#edsv').onclick=()=>{const o=EO,t=Math.max(0,Math.round(+$('#edto').value||0));if(!t)return toast('Total tidak boleh kosong');
+ const p={prints:EN,total:t,session_fee:t-EN*o.unit_price,method:EM,status:ES,paid:ES=='lunas'?t:0};
+ $('#edm').classList.remove('show');applyPatch(o,p)};
+
+// ===== Rekap pesanan =====
+let RKT='';
+function rkRange(v){const a=new Date();a.setHours(0,0,0,0);let e=null;if(v=='yd'){e=new Date(a);a.setDate(a.getDate()-1)}else if(v=='7')a.setDate(a.getDate()-6);else if(v=='30')a.setDate(a.getDate()-29);else if(v=='mo')a.setDate(1);return[a,e]}
+async function rekap(){const v=$('#rkr').value,[a,e]=rkRange(v),inR=o=>{const d=new Date(o.created_at);return d>=a&&(!e||d<e)};let L=null,off=false;
+ if(sb&&navigator.onLine){try{let q=sb.from('orders').select('*').gte('created_at',a.toISOString());if(e)q=q.lt('created_at',e.toISOString());const r=await q.order('created_at',{ascending:false}).limit(3000);if(!r.error)L=r.data}catch(x){}}
+ if(!L){off=true;try{L=JSON.parse(localStorage.pbt||'[]')}catch(x){L=[]}L=L.filter(inR)}
+ L=[...PQ.o.filter(o=>inR(o)&&!L.some(x=>x.code==o.code)),...L].map(o=>{const c={...o};PQ.p.filter(p=>p.code==c.code).forEach(p=>Object.assign(c,p.patch));return c});
+ const sm=A=>A.reduce((t,o)=>t+(+o.total||0),0),ln=L.filter(o=>o.status=='lunas'),bl=L.filter(o=>o.status!='lunas'),cet=L.reduce((t,o)=>t+(+o.prints||0),0);
+ const mt=[['Tunai','tunai'],['QRIS','qris'],['Transfer','transfer']].map(([n,m])=>{const A=ln.filter(o=>o.method==m);return[n,A.length,sm(A)]});
+ const dy={};L.forEach(o=>{const k=new Date(o.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'});const d=dy[k]||(dy[k]={n:0,c:0,r:0});d.n++;d.c+=+o.prints||0;if(o.status=='lunas')d.r+=+o.total||0});
+ const lb=$('#rkr').selectedOptions[0].textContent,T=[`Rekap ${S.usaha} · ${lb}`,`Pesanan: ${L.length} · Total cetak: ${cet}`,`Omzet lunas: ${rp(sm(ln))} (${ln.length} pesanan)`,`Belum lunas: ${rp(sm(bl))} (${bl.length} pesanan)`,...mt.map(([n,c,t])=>`${n}: ${c} pesanan · ${rp(t)}`)];
+ const keys=Object.keys(dy);if(keys.length>1){T.push('Per hari:');keys.forEach(k=>T.push(`${k}: ${dy[k].n} pesanan · ${dy[k].c} cetak · ${rp(dy[k].r)}`))}
+ RKT=T.join('\n');const row=(x,y)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0"><span>${x}</span><b>${y}</b></div>`;
+ $('#rko').innerHTML=(off?'<div class="m" style="color:var(--mut);margin-bottom:6px">Offline: data terbatas pada yang tersimpan di perangkat ini.</div>':'')+row('Pesanan',L.length)+row('Total cetak',cet)+row('Omzet lunas',rp(sm(ln)))+row('Belum lunas',rp(sm(bl))+' ('+bl.length+')')+'<hr style="border:0;border-top:1px dashed var(--line);margin:6px 0">'+mt.map(([n,c,t])=>row(n+' ('+c+')',rp(t))).join('')+(keys.length>1?'<hr style="border:0;border-top:1px dashed var(--line);margin:6px 0">'+keys.map(k=>row(k+' · '+dy[k].n+' pesanan',rp(dy[k].r))).join(''):'')}
+$('#rkt').onclick=()=>{const p=$('#rkp');p.style.display=p.style.display=='none'?'':'none';if(p.style.display=='')rekap()};
+$('#rkr').onchange=rekap;
+$('#rkc').onclick=async()=>{try{await navigator.clipboard.writeText(RKT);toast('Rekap disalin')}catch(e){toast('Gagal menyalin')}};
 
 async function sendTo(o,via){if(!navigator.onLine)return toast('Butuh internet untuk kirim file');if(via=='wa'&&!o.wa)return toast('Nomor WA belum diisi');if(via=='em'&&!o.email)return toast('Email belum diisi');
  const ss=await sessOf(o.code),id=ss&&ss.id;
