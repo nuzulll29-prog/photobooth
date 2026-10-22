@@ -194,7 +194,7 @@ function draw(cv){if(ST.tpl.slots)return drawImg(cv);const T=th(),L=ST.lay,c=L.c
  for(let i=0;i<L.n;i++){const px=pad+(i%c)*(cw+T.gap),py=top+Math.floor(i/c)*(ch+T.gap);rects.push([px,py,cw,ch]);
   x.save();x.beginPath();x.roundRect(px,py,cw,ch,T.radius);x.clip();x.fillStyle='#0002';x.fillRect(px,py,cw,ch);if(ST.photos[i])cover(x,ST.photos[i],px,py,cw,ch);x.restore();
   x.strokeStyle=T.accent;x.lineWidth=T.border;x.beginPath();x.roundRect(px,py,cw,ch,T.radius);x.stroke();
-  if(ST.vids[i]){x.fillStyle=T.accent;x.beginPath();x.arc(px+cw-34,py+34,22,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.moveTo(px+cw-41,py+23);x.lineTo(px+cw-41,py+45);x.lineTo(px+cw-24,py+34);x.fill()}}
+  }
  const fy=top+gh+40,q=240,qx=(W-q-40)/2;x.fillStyle='#fff';x.beginPath();x.roundRect(qx,fy,q+40,q+40,20);x.fill();x.strokeStyle=T.accent;x.lineWidth=5;x.stroke();
  try{const qq=qrMake(qrUrl());const n=qq.getModuleCount(),m=q/n;x.fillStyle='#000';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(qq.isDark(r,k))x.fillRect(qx+20+k*m,fy+20+r*m,Math.ceil(m),Math.ceil(m))}catch(e){}
  x.fillStyle=T.text;x.font=`28px ${T.font}`;x.fillText('Scan QR & arahkan kamera ke foto',W/2,fy+q+82);x.fillText('untuk melihat video BTS ✨',W/2,fy+q+118)}
@@ -274,7 +274,7 @@ function buildOv(){const cv=$('#cv'),ov=$('#ov');ov.innerHTML='';rects.forEach((
 $('#cv').onclick=e=>{const cv=$('#cv'),r=cv.getBoundingClientRect(),px=(e.clientX-r.left)*cv.width/r.width,py=(e.clientY-r.top)*cv.height/r.height;
  const i=rects.findIndex(([a,b,w,h])=>px>=a&&px<=a+w&&py>=b&&py<=b+h);if(i<0)return;playBts(i)};
 $('#mx').onclick=()=>{$('#arm').classList.remove('show');$('#mv').pause()};
-const manifest=(s=ST)=>{const cv=$('#cv'),W=cv.width,H=cv.height;return{v:2,id:s.id,qr_url:qrFor(s.id),layout:s.lay.name,template:ST.tpl.name,cols:s.lay.c,print:{w:W,h:H,aspect:+(W/H).toFixed(5),cm:ST.tpl.slots?cmOf(ST.tpl):null},border:th().border||0,target:'target.jpg',
+const manifest=(s=ST)=>{const cv=$('#cv'),W=cv.width,H=cv.height;return{v:2,id:s.id,qr_url:qrFor(s.id),layout:s.lay.name,template:ST.tpl.name,cols:s.lay.c,print:{w:W,h:H,aspect:+(W/H).toFixed(5),cm:ST.tpl.slots?cmOf(ST.tpl):null},border:th().border||0,nb:1,target:'target.jpg',
  slots:rects.map((r,i)=>({slot:i+1,x:+(r[0]/W).toFixed(5),y:+(r[1]/H).toFixed(5),w:+(r[2]/W).toFixed(5),h:+(r[3]/H).toFixed(5),ar:+(r[2]/r[3]).toFixed(4),photo:!!s.pb[i],video:!!s.vb[i],video_crop:s.raw&&s.raw[i]?'raw':'cell'}))}};
 // upload: kiosk -> Worker (R2/Supabase), video -> Cloudinary (kompres) -> webhook Worker -> R2
 const rt=async(fn,n=3)=>{for(let k=1;;k++){try{return await fn()}catch(e){if(e.stop||k>=n)throw e;await sleep(1500*k)}}};
