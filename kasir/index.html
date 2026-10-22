@@ -68,8 +68,8 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <h2>Perangkat ini</h2><label>URL Worker</label><input id="l_api" autocapitalize="none"><label>Kunci kiosk (hanya disimpan di perangkat ini)</label><input id="l_key" type="password"><label>Awalan kode order (1–5 huruf; beda untuk tiap kasir)</label><input id="l_pfx" maxlength="5" placeholder="A" autocapitalize="characters"><label>Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)</label><input id="l_cm" placeholder="5x15"><label>Ukuran cetak 6 grid (cm, lebar x tinggi)</label><input id="l_cm6" placeholder="5x15"><br><br>
 <button class="p" id="ss" style="width:100%">Simpan pengaturan</button><br><br><button id="lo" style="width:100%">Keluar</button></div>
 
-<div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak, lalu pilih ukuran kertas.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div><button class="s" id="cdel" style="display:none;width:100%;margin-top:8px">Hapus sesi tanpa kasir yang dicentang</button>
-<label>Ukuran kertas</label><select id="pm"><option value="4r">4R (10×15 cm)</option><option value="a4">A4 (susun banyak foto)</option></select><div id="r4o" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center"><input id="mx" class="ck" type="checkbox" checked>Gabung sisa strip antar pelanggan (hemat kertas)</label><p style="color:var(--mut);font-size:14px;margin:6px 0 0">Strip 3 dan 4 grid: 2 per lembar 4R. Grid 6: 1 per lembar, sebesar mungkin.</p></div><div id="a4o"><label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><label>Skala foto grid 6 (lebih besar dari ukuran asli)</label><select id="s6"><option value="100">100% (ukuran asli)</option><option value="115">115%</option><option value="130">130%</option><option value="150">150%</option></select></div><br><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
+<div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak, lalu pilih ukuran kertas.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div><button class="s" id="cdel" style="display:none;width:100%;margin-top:8px">Hapus sesi tanpa kasir yang dicentang</button><button class="s" id="cclr" style="width:100%;margin-top:8px">Hapus ikon play (sesi lama) pada yang dicentang</button>
+<label>Ukuran kertas</label><select id="pm"><option value="4r">4R (10×15 cm)</option><option value="a4">A4 (susun banyak foto)</option></select><label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input id="nop" class="ck" type="checkbox" checked>Hilangkan ikon play pada cetakan sesi lama</label><div id="r4o" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center"><input id="mx" class="ck" type="checkbox" checked>Gabung sisa strip antar pelanggan (hemat kertas)</label><p style="color:var(--mut);font-size:14px;margin:6px 0 0">Strip 3 dan 4 grid: 2 per lembar 4R. Grid 6: 1 per lembar, sebesar mungkin.</p></div><div id="a4o"><label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><label>Skala foto grid 6 (lebih besar dari ukuran asli)</label><select id="s6"><option value="100">100% (ukuran asli)</option><option value="115">115%</option><option value="130">130%</option><option value="150">150%</option></select></div><br><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
 <div class="pg w" id="p4"><h1>Antrean AR</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Perangkat ini menyiapkan file pelacak (target.mind) di belakang layar, jadi kiosk tidak perlu menunggu. Biarkan aplikasi tetap terbuka.</p>
 <label style="display:flex;gap:8px;align-items:center"><input id="ao" class="ck" type="checkbox" checked>Proses otomatis</label><div id="ast" class="od" style="margin:10px 0"></div><button class="s" id="adel" style="display:none;margin-bottom:10px;width:100%">Hapus semua yang gagal</button><div id="al"></div></div>
 <nav><button data-p="0" class="on">Kasir</button><button data-p="1">Pesanan</button><button data-p="3">Cetak</button><button data-p="4">AR</button><button data-p="2">Atur</button></nav></div>
@@ -168,6 +168,34 @@ $('#rkt').onclick=()=>{const p=$('#rkp');p.style.display=p.style.display=='none'
 $('#rkr').onchange=rekap;
 $('#rkc').onclick=async()=>{try{await navigator.clipboard.writeText(RKT);toast('Rekap disalin')}catch(e){toast('Gagal menyalin')}};
 
+// ===== Bersihkan ikon play pada sesi lama =====
+let CLR=new Set();try{CLR=new Set(JSON.parse(localStorage.pbclr||'[]'))}catch(e){}
+const imgL=u=>new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u+(u.includes('?')?'&':'?')+'c='+Date.now()});
+const cvBlob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
+async function clrOne(id){
+ if(CLR.has(id))return 'lewat';
+ const B=`${LC.api}/photobooth/pub/${id}`,m=await (await fetch(B+'/manifest.json?c='+Date.now())).json();
+ if(!m.slots||(m.print&&m.print.cm))return 'lewat';
+ const sl=m.slots.filter(q=>q.video&&q.photo);if(!sl.length)return 'lewat';
+ const pr=await imgL(B+'/print.png'),W=pr.naturalWidth,H=pr.naturalHeight,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.drawImage(pr,0,0);
+ for(const q of sl){const ph=await imgL(`${B}/foto-${q.slot}.jpg`),px=q.x*W,py=q.y*H,cw=q.w*W,ch=q.h*H,iw=ph.naturalWidth,ih=ph.naturalHeight,sc=Math.max(cw/iw,ch/ih),sw=cw/sc,sh=ch/sc;
+  x.save();x.beginPath();x.arc(px+cw-34,py+34,26,0,7);x.clip();x.drawImage(ph,(iw-sw)/2,(ih-sh)/2,sw,sh,px,py,cw,ch);x.restore()}
+ let tw=Math.round(W*Math.min(1,1000/Math.max(W,H))),th=Math.round(H*Math.min(1,1000/Math.max(W,H)));
+ try{const t0=await imgL(B+'/target.jpg');tw=t0.naturalWidth;th=t0.naturalHeight}catch(e){}
+ const t=document.createElement('canvas');t.width=tw;t.height=th;t.getContext('2d').drawImage(cv,0,0,tw,th);
+ const pb=await cvBlob(cv,'image/png'),tb=await cvBlob(t,'image/jpeg',.9);
+ let r=await wApi(`/photobooth/file/${id}/print.png`,'PUT',pb,'image/png');if(!r.ok)throw new Error('unggah gambar cetak '+r.status);
+ r=await wApi(`/photobooth/file/${id}/target.jpg`,'PUT',tb,'image/jpeg');if(!r.ok)throw new Error('unggah target '+r.status);
+ r=await fin(id,'pending');if(!r.ok)throw new Error('antre AR '+r.status);
+ CLR.add(id);try{localStorage.pbclr=JSON.stringify([...CLR].slice(-500))}catch(e){}return 'ok'}
+$('#cclr').onclick=async()=>{if(!(LC.api&&LC.key))return toast('Isi URL Worker dan Kunci kiosk di tab Atur');if(!navigator.onLine)return toast('Butuh internet');
+ const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>CO.find(x=>x.id==c.dataset.i)).filter(Boolean);if(!sel.length)return toast('Centang sesi yang mau dibersihkan');
+ if(!confirm('Hapus ikon play dari gambar cetak '+sel.length+' sesi? Gambar cetak diganti dan file AR diproses ulang (beberapa menit, biarkan aplikasi terbuka). Kertas yang sudah tercetak tidak berubah.'))return;
+ let ok=0,sk=0;const er=[];
+ for(const o of sel){const ss=o.sid?{id:o.sid}:await sessOf(o.code),id=ss&&ss.id;if(!id){er.push(o.code);continue}
+  try{toast('Memproses '+o.code+'…');const r=await clrOne(id);if(r=='ok')ok++;else sk++}catch(e){console.error(e);er.push(o.code)}}
+ toast(`Selesai: ${ok} dibersihkan, ${sk} dilewati`+(er.length?', gagal: '+er.join(', '):''));arTick()};
+
 async function sendTo(o,via){if(!navigator.onLine)return toast('Butuh internet untuk kirim file');if(via=='wa'&&!o.wa)return toast('Nomor WA belum diisi');if(via=='em'&&!o.email)return toast('Email belum diisi');
  const ss=await sessOf(o.code),id=ss&&ss.id;
  if(!id)return toast('Foto belum masuk dari kiosk');
@@ -215,9 +243,19 @@ const sessList=async()=>{if(SC&&Date.now()-SC.t<20000)return SC.d;const {data,er
 const sessOf=async code=>{const n=norm(code);return n?(await sessList()).find(x=>norm(x.order_code)==n):null};
 // unduh PDF A4 (ukuran asli, 300 dpi)
 const loadJs=u=>new Promise((a,b)=>{if(window.jspdf)return a();const e=document.createElement('script');e.src=u;e.onload=a;e.onerror=()=>b(new Error('pustaka PDF gagal dimuat'));document.head.appendChild(e)});
+// ===== Hilangkan ikon play di cetakan lama (di memori saja; file di server tidak diubah) =====
+const CLN={};
+async function cleanBadge(id,M,src){if(CLN[id])return CLN[id];
+ try{const ld=async u=>{const r=await fetch(u);if(!r.ok)throw new Error('x');return createImageBitmap(await r.blob())};
+  const pr=await ld(src),W=pr.width,H=pr.height,k=W/((M.print&&M.print.w)||W),cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.drawImage(pr,0,0);
+  const B=`${LC.api}/photobooth/pub/${id}`;let n=0;
+  await Promise.all((M.slots||[]).filter(t=>t.photo).map(async t=>{try{const im=await ld(`${B}/foto-${t.slot}.jpg`),px=t.x*W,py=t.y*H,cw=t.w*W,ch=t.h*H,sc=Math.max(cw/im.width,ch/im.height),sw=cw/sc,sh=ch/sc;
+    x.save();x.beginPath();x.arc(px+cw-34*k,py+34*k,24*k,0,7);x.clip();x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,cw,ch);x.restore();n++}catch(e){}}));
+  if(!n)return src;
+  const b=await new Promise(r=>cv.toBlob(r,'image/png'));return CLN[id]=URL.createObjectURL(b)}catch(e){return src}}
 async function savePdf(){try{toast('Membuat PDF…');await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
  const doc=new window.jspdf.jsPDF({unit:'mm',format:[PGW,PGH],orientation:'portrait',compress:true}),K=11.811,imgs={},cache={};
- const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u+(u.includes('?')?'&':'?')+'c=1'}));
+ const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u.startsWith('blob:')?u:u+(u.includes('?')?'&':'?')+'c=1'}));
  for(let pi=0;pi<PG.length;pi++){if(pi)doc.addPage([PGW,PGH],'portrait');
   for(const i of PG[pi].it){const key=i.src+'|'+i.w+'|'+i.h+'|'+i.r;
    if(!cache[key]){const im=await load(i.src),cv=document.createElement('canvas');cv.width=Math.round(i.w*K);cv.height=Math.round(i.h*K);const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);
@@ -230,10 +268,11 @@ $('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur')
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
  toast('Menyusun…');const f6=(+$('#s6').value||100)/100;const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
  await Promise.all(sel.map(async({o,n},oi)=>{const ss=o.sid?{id:o.sid}:await sessOf(o.code),id=ss&&ss.id;if(!id)return skip.push(o.code);
-  let cm=def,A=0,six=false;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0;six=!!(m.slots&&m.slots.length>=6)}catch(e){}
+  let cm=def,A=0,six=false,M=null;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();M=m;cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0;six=!!(m.slots&&m.slots.length>=6)}catch(e){}
   let w=cm[0]*10,h=cm[1]*10;if(A&&$('#tr').checked){if(A>w/h)h=w/A;else w=h*A;w=Math.round(w*10)/10;h=Math.round(h*10)/10}
   if(six&&f6!=1){w=Math.round(w*f6*10)/10;h=Math.round(h*f6*10)/10}
-  for(let k=0;k<n;k++)its.push({w,h,asp:A||w/h,six,ord:oi,src:`${LC.api}/photobooth/pub/${id}/print.png`,oid:o.id})}));
+  let src=`${LC.api}/photobooth/pub/${id}/print.png`;if($('#nop').checked&&M&&!M.nb&&!(M.print&&M.print.cm))src=await cleanBadge(id,M,src);
+  for(let k=0;k<n;k++)its.push({w,h,asp:A||w/h,six,ord:oi,src,oid:o.id})}));
  if(!its.length)return toast('Foto belum masuk dari kiosk: '+skip.join(', '));
  const m4=$('#pm').value=='4r';PGW=m4?102:210;PGH=m4?152:297;$('#sheet').className=m4?'r4':'';
  const pg=m4?pack4r(its,$('#mx').checked):pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas');
