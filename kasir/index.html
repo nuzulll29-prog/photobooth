@@ -245,14 +245,16 @@ const sessOf=async code=>{const n=norm(code);return n?(await sessList()).find(x=
 const loadJs=u=>new Promise((a,b)=>{if(window.jspdf)return a();const e=document.createElement('script');e.src=u;e.onload=a;e.onerror=()=>b(new Error('pustaka PDF gagal dimuat'));document.head.appendChild(e)});
 // ===== Hilangkan ikon play di cetakan lama (di memori saja; file di server tidak diubah) =====
 const CLN={};
-async function cleanBadge(id,M,src){if(CLN[id])return CLN[id];
- try{const ld=async u=>{const r=await fetch(u);if(!r.ok)throw new Error('x');return createImageBitmap(await r.blob())};
+let CQ=Promise.resolve(),CNT=0;
+const cleanBadge=(id,M,src)=>CLN[id]?Promise.resolve(CLN[id]):(CQ=CQ.then(()=>{toast('Membersihkan ikon play… '+(++CNT));return cleanBadge0(id,M,src)}));
+async function cleanBadge0(id,M,src){if(CLN[id])return CLN[id];
+ try{const ld=async u=>{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),25000);try{const r=await fetch(u,{signal:ac.signal});if(!r.ok)throw new Error('x');return await createImageBitmap(await r.blob())}finally{clearTimeout(tm)}};
   const pr=await ld(src),W=pr.width,H=pr.height,k=W/((M.print&&M.print.w)||W),cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.drawImage(pr,0,0);
   const B=`${LC.api}/photobooth/pub/${id}`;let n=0;
   await Promise.all((M.slots||[]).filter(t=>t.photo).map(async t=>{try{const im=await ld(`${B}/foto-${t.slot}.jpg`),px=t.x*W,py=t.y*H,cw=t.w*W,ch=t.h*H,sc=Math.max(cw/im.width,ch/im.height),sw=cw/sc,sh=ch/sc;
-    x.save();x.beginPath();x.arc(px+cw-34*k,py+34*k,24*k,0,7);x.clip();x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,cw,ch);x.restore();n++}catch(e){}}));
+    x.save();x.beginPath();x.arc(px+cw-34*k,py+34*k,24*k,0,7);x.clip();x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,cw,ch);x.restore();im.close();n++}catch(e){}}));
   if(!n)return src;
-  const b=await new Promise(r=>cv.toBlob(r,'image/png'));return CLN[id]=URL.createObjectURL(b)}catch(e){return src}}
+  pr.close();const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',.95));cv.width=cv.height=0;return CLN[id]=URL.createObjectURL(b)}catch(e){return src}}
 async function savePdf(){try{toast('Membuat PDF…');await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
  const doc=new window.jspdf.jsPDF({unit:'mm',format:[PGW,PGH],orientation:'portrait',compress:true}),K=11.811,imgs={},cache={};
  const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u.startsWith('blob:')?u:u+(u.includes('?')?'&':'?')+'c=1'}));
@@ -264,21 +266,22 @@ async function savePdf(){try{toast('Membuat PDF…');await loadJs('https://cdnjs
    doc.addImage(cache[key],'JPEG',i.x,i.y,i.w,i.h,key);
    if(PGD){doc.setDrawColor(170);doc.setLineWidth(.2);doc.rect(i.x-1,i.y-1,i.w+2,i.h+2)}}}
  doc.save('cetak-'+(PGW==102?'4R':'A4')+'-'+new Date().toISOString().slice(0,10)+'.pdf');toast('PDF siap diunduh')}catch(e){console.error(e);toast('Gagal membuat PDF: '+e.message)}}
-$('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur');
+async function cbRun(){if(!LC.api)return toast('Isi URL Worker di tab Atur');
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
  toast('Menyusun…');const f6=(+$('#s6').value||100)/100;const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
  await Promise.all(sel.map(async({o,n},oi)=>{const ss=o.sid?{id:o.sid}:await sessOf(o.code),id=ss&&ss.id;if(!id)return skip.push(o.code);
   let cm=def,A=0,six=false,M=null;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();M=m;cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0;six=!!(m.slots&&m.slots.length>=6)}catch(e){}
   let w=cm[0]*10,h=cm[1]*10;if(A&&$('#tr').checked){if(A>w/h)h=w/A;else w=h*A;w=Math.round(w*10)/10;h=Math.round(h*10)/10}
   if(six&&f6!=1){w=Math.round(w*f6*10)/10;h=Math.round(h*f6*10)/10}
-  let src=`${LC.api}/photobooth/pub/${id}/print.png`;if($('#nop').checked&&M&&!M.nb&&!(M.print&&M.print.cm))src=await cleanBadge(id,M,src);
+  let src=`${LC.api}/photobooth/pub/${id}/print.png`;if($('#nop').checked&&M&&!M.nb&&!CLR.has(id)&&!(M.print&&M.print.cm))src=await cleanBadge(id,M,src);
   for(let k=0;k<n;k++)its.push({w,h,asp:A||w/h,six,ord:oi,src,oid:o.id})}));
  if(!its.length)return toast('Foto belum masuk dari kiosk: '+skip.join(', '));
  const m4=$('#pm').value=='4r';PGW=m4?102:210;PGH=m4?152:297;$('#sheet').className=m4?'r4':'';
  const pg=m4?pack4r(its,$('#mx').checked):pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas');
  const ao=[...new Set(its.map(i=>i.oid))];PO=ao.filter(x=>!String(x).startsWith('s_'));PX=ao.filter(x=>String(x).startsWith('s_')).map(x=>String(x).slice(2));PG=pg;PGD=!m4&&$('#gd').checked;const h=sheetHtml(pg,PGD);$('#sheet').innerHTML=h;$('#pvb').innerHTML=h;
  const z=Math.min(1,(innerWidth-72)/(PGW*3.78));$$('#pvb .A4').forEach(a=>a.style.zoom=z);
- $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar ${m4?'4R':'A4'}`+(skip.length?` · dilewati (foto belum masuk): ${skip.join(', ')} · kode terbaru di kiosk: ${(await sessList()).slice(0,5).map(x=>x.order_code||'(kosong)').join(', ')}`:'');$('#pvm').classList.add('show')};
+ $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar ${m4?'4R':'A4'}`+(skip.length?` · dilewati (foto belum masuk): ${skip.join(', ')} · kode terbaru di kiosk: ${(await sessList()).slice(0,5).map(x=>x.order_code||'(kosong)').join(', ')}`:'');$('#pvm').classList.add('show')}
+$('#cb').onclick=()=>cbRun().catch(e=>{console.error(e);toast('Gagal menyusun: '+(e&&e.message||e))});
 $('#pvd').onclick=savePdf;
 async function saveImg(){try{const fmt=$('#pvf').value,mime=fmt=='png'?'image/png':'image/jpeg',K=11.811,imgs={},tag=(PGW==102?'4R':'A4')+'-'+new Date().toISOString().slice(0,10);toast('Membuat gambar…');
  const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u.startsWith('blob:')?u:u+(u.includes('?')?'&':'?')+'c=1'}));
