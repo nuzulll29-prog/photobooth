@@ -81,7 +81,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <label>Status pembayaran</label><div class="row chips" id="eds"><button data-s="lunas">Lunas</button><button data-s="belum">Belum bayar</button></div>
 <label>Total (Rp), bisa diubah manual</label><input id="edto" type="number" inputmode="numeric">
 <div class="row" style="margin-top:14px"><button id="edc">Batal</button><button id="edsv" class="p">Simpan</button></div></div></div>
-<div class="mod" id="pvm"><div class="b" style="max-width:520px"><div id="pvi" style="margin-bottom:8px;font-size:14px"></div><div id="pvb"></div><div class="row" style="margin-top:10px"><button id="pvx">Tutup</button><button id="pvd">Unduh PDF</button><button class="p" id="pvp">Cetak</button></div><p style="font-size:12px;color:var(--mut);margin:8px 0 0">Di dialog cetak: pilih ukuran kertas yang sesuai (4R = 4×6 inci, atau A4), skala 100% (jangan "Sesuaikan ke halaman"), margin Tidak ada.</p></div></div><div id="sheet"></div>
+<div class="mod" id="pvm"><div class="b" style="max-width:520px"><div id="pvi" style="margin-bottom:8px;font-size:14px"></div><div id="pvb"></div><div class="row" style="margin-top:10px"><button id="pvx">Tutup</button><button id="pvd">Unduh PDF</button><button class="p" id="pvp">Cetak</button></div><div class="row" style="margin-top:8px"><select id="pvf"><option value="jpg">Format JPG</option><option value="png">Format PNG</option></select><button id="pvg">Unduh gambar</button></div><p style="font-size:12px;color:var(--mut);margin:8px 0 0">Di dialog cetak: pilih ukuran kertas yang sesuai (4R = 4×6 inci, atau A4), skala 100% (jangan "Sesuaikan ke halaman"), margin Tidak ada.</p></div></div><div id="sheet"></div>
 <div id="rcp"></div><div id="toast"></div>
 
 <script>
@@ -280,6 +280,16 @@ $('#cb').onclick=async()=>{if(!LC.api)return toast('Isi URL Worker di tab Atur')
  const z=Math.min(1,(innerWidth-72)/(PGW*3.78));$$('#pvb .A4').forEach(a=>a.style.zoom=z);
  $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar ${m4?'4R':'A4'}`+(skip.length?` · dilewati (foto belum masuk): ${skip.join(', ')} · kode terbaru di kiosk: ${(await sessList()).slice(0,5).map(x=>x.order_code||'(kosong)').join(', ')}`:'');$('#pvm').classList.add('show')};
 $('#pvd').onclick=savePdf;
+async function saveImg(){try{const fmt=$('#pvf').value,mime=fmt=='png'?'image/png':'image/jpeg',K=11.811,imgs={},tag=(PGW==102?'4R':'A4')+'-'+new Date().toISOString().slice(0,10);toast('Membuat gambar…');
+ const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u.startsWith('blob:')?u:u+(u.includes('?')?'&':'?')+'c=1'}));
+ for(let pi=0;pi<PG.length;pi++){const cv=document.createElement('canvas');cv.width=Math.round(PGW*K);cv.height=Math.round(PGH*K);const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);
+  for(const i of PG[pi].it){const im=await load(i.src),cw=i.w*K,ch=i.h*K,W0=i.r?ch:cw,H0=i.r?cw:ch,sc=Math.min(W0/im.naturalWidth,H0/im.naturalHeight),dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;
+   c.save();c.translate(i.x*K+cw/2,i.y*K+ch/2);if(i.r)c.rotate(Math.PI/2);c.drawImage(im,-dw/2,-dh/2,dw,dh);c.restore();
+   if(PGD){c.strokeStyle='#aaa';c.lineWidth=.2*K;c.strokeRect((i.x-1)*K,(i.y-1)*K,(i.w+2)*K,(i.h+2)*K)}}
+  const b=await new Promise(r=>cv.toBlob(r,mime,.95));if(!b)throw new Error('gagal membuat gambar');
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`cetak-${tag}${PG.length>1?'-'+(pi+1):''}.${fmt}`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);await new Promise(r=>setTimeout(r,500))}
+ toast(PG.length>1?PG.length+' gambar diunduh':'Gambar diunduh')}catch(e){console.error(e);toast('Gagal membuat gambar: '+e.message)}}
+$('#pvg').onclick=saveImg;
 $('#pvx').onclick=()=>$('#pvm').classList.remove('show');
 $('#pvp').onclick=async()=>{await Promise.all([...$$('#sheet img')].map(i=>i.decode().catch(()=>{})));$('#pvm').classList.remove('show');document.body.classList.add('ps');setTimeout(()=>window.print(),100)};
 addEventListener('afterprint',async()=>{if(!document.body.classList.contains('ps'))return;document.body.classList.remove('ps');if((PO.length||PX.length)&&confirm('Tandai pesanan ini sudah tercetak?')){if(PO.length)await sb.from('orders').update({printed:true}).in('id',PO);PX.forEach(i=>XP.add(i));try{localStorage.setItem('pbxp',JSON.stringify([...XP].slice(-300)))}catch(e){}loadC()}});
