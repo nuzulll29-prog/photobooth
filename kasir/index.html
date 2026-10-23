@@ -240,7 +240,9 @@ $('#cr').onchange=loadC;const pmUp=()=>{const a=$('#pm').value=='a4';$('#a4o').s
 const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 let SC=null;
 const sessList=async()=>{if(SC&&Date.now()-SC.t<20000)return SC.d;const {data,error}=await sb.from('pb_sessions').select('id,order_code').order('created_at',{ascending:false}).limit(400);if(!error&&data)SC={t:Date.now(),d:data};return data||[]};
-const sessOf=async code=>{const n=norm(code);return n?(await sessList()).find(x=>norm(x.order_code)==n):null};
+const mkSid=n=>String(n||'').trim().toUpperCase().replace(/[^A-Za-z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);
+const sessOf=async code=>{const n=norm(code);if(!n)return null;const f=(await sessList()).find(x=>norm(x.order_code)==n);if(f)return f;
+ const c=mkSid(code);if(c&&LC.api)try{const r=await fetch(`${LC.api}/photobooth/pub/${c}/manifest.json`);if(r.ok)return{id:c,order_code:code}}catch(e){}return null};
 // unduh PDF A4 (ukuran asli, 300 dpi)
 const loadJs=u=>new Promise((a,b)=>{if(window.jspdf)return a();const e=document.createElement('script');e.src=u;e.onload=a;e.onerror=()=>b(new Error('pustaka PDF gagal dimuat'));document.head.appendChild(e)});
 // ===== Hilangkan ikon play di cetakan lama (di memori saja; file di server tidak diubah) =====
@@ -280,7 +282,7 @@ async function cbRun(){if(!LC.api)return toast('Isi URL Worker di tab Atur');
  const pg=m4?pack4r(its,$('#mx').checked):pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas');
  const ao=[...new Set(its.map(i=>i.oid))];PO=ao.filter(x=>!String(x).startsWith('s_'));PX=ao.filter(x=>String(x).startsWith('s_')).map(x=>String(x).slice(2));PG=pg;PGD=!m4&&$('#gd').checked;const h=sheetHtml(pg,PGD);$('#sheet').innerHTML=h;$('#pvb').innerHTML=h;
  const z=Math.min(1,(innerWidth-72)/(PGW*3.78));$$('#pvb .A4').forEach(a=>a.style.zoom=z);
- $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar ${m4?'4R':'A4'}`+(skip.length?` · dilewati (foto belum masuk): ${skip.join(', ')} · kode terbaru di kiosk: ${(await sessList()).slice(0,5).map(x=>x.order_code||'(kosong)').join(', ')}`:'');$('#pvm').classList.add('show')}
+ $('#pvi').textContent=`${its.length} foto · ${pg.length} lembar ${m4?'4R':'A4'}`+(skip.length?` · dilewati (sesi tidak ditemukan di database maupun di server): ${skip.join(', ')} · kode terbaru di kiosk: ${(await sessList()).slice(0,5).map(x=>x.order_code||'(kosong)').join(', ')}`:'');$('#pvm').classList.add('show')}
 $('#cb').onclick=()=>cbRun().catch(e=>{console.error(e);toast('Gagal menyusun: '+(e&&e.message||e))});
 $('#pvd').onclick=savePdf;
 const CRCT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
