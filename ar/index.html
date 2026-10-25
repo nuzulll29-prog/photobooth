@@ -14,7 +14,7 @@ button{font:inherit;font-weight:700;border:0;border-radius:99px;padding:14px 28p
 <script>setTimeout(function(){var t=document.getElementById('lt');if(t&&t.textContent.indexOf('Menyiapkan')==0)t.textContent='Library AR gagal dimuat. Cek koneksi lalu muat ulang halaman.'},15000)</script>
 </head><body>
 <div id="c"></div>
-<div id="ld"><div id="lt" style="font-size:18px">Menyiapkan video AR…</div><button id="go" style="display:none">Mulai</button></div>
+<div id="ld"><div id="lt" style="font-size:18px">Menyiapkan video BTS…</div><button id="go" style="display:none">Mulai</button></div>
 <div id="ui"><div id="msg">Arahkan kamera ke foto cetakmu</div><button id="snd">🔇</button></div>
 <script type="module" onerror="document.getElementById('lt').textContent='Library AR gagal dimuat. Cek koneksi lalu muat ulang.'">
 import * as THREE from 'three';
@@ -28,7 +28,9 @@ const base=`${API}/photobooth/pub/${id}`;
  const r=await fetch(base+'/manifest.json');if(!r.ok)return T('Foto tidak ditemukan. Scan ulang QR di cetakanmu.');
  const m=await r.json(),A=m.print.aspect,tm=base+'/target.mind';
  if(!(await fetch(tm,{headers:{Range:'bytes=0-0'}})).ok)return T('Video masih diproses. Coba lagi dalam 1–2 menit ya.'); // cek file ada; Worker hanya melayani GET (HEAD ditolak)
- const mind=new MindARThree({container:$('#c'),imageTargetSrc:tm,uiLoading:'no',uiScanning:'no',uiError:'no'});
+ const qs=new URLSearchParams(location.search),nv=(k,d)=>{const v=parseFloat(qs.get(k));return isFinite(v)?v:d};
+ // penghalus gerakan: filterMinCF & filterBeta makin kecil = makin stabil (tapi sedikit tertinggal saat HP digerakkan cepat); bisa dicoba lewat link, mis. &mc=0.0005&b=50
+ const mind=new MindARThree({container:$('#c'),imageTargetSrc:tm,uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:nv('mc',0.0001),filterBeta:nv('b',10),missTolerance:nv('mt',12),warmupTolerance:nv('wt',5)});
  const {renderer,scene,camera}=mind,anchor=mind.addAnchor(0),vids=[];
  for(const s of m.slots){if(!s.video)continue;
   const v=document.createElement('video');v.crossOrigin='anonymous';v.loop=true;v.muted=true;v.playsInline=true;v.preload='auto';
