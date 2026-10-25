@@ -56,7 +56,7 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <div class="row"><button id="bl">Simpan belum bayar</button><button class="p" id="ls">Terima & simpan</button></div></div>
 
 <div class="pg w" id="p1"><h1>Pesanan</h1><div class="kb"><div><b id="k1">0</b><span>Omzet hari ini</span></div><div><b id="k2">0</b><span>Pesanan</span></div><div><b id="k3">0</b><span>Total cetak</span></div></div>
-<button class="s" id="rkt" style="width:100%;margin-bottom:8px">Rekap pesanan</button><div class="od" id="rkp" style="display:none"><label>Rentang waktu</label><select id="rkr"><option value="td">Hari ini</option><option value="yd">Kemarin</option><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="mo">Bulan ini</option></select><div id="rko" style="margin-top:10px;font-size:15px"></div><button class="s" id="rkc" style="margin-top:8px">Salin rekap</button></div>
+<button class="s" id="rkt" style="width:100%;margin-bottom:8px">Rekap pesanan</button><div class="od" id="rkp" style="display:none"><label>Rentang waktu</label><select id="rkr"><option value="td">Hari ini</option><option value="yd">Kemarin</option><option value="7">7 hari terakhir</option><option value="30">30 hari terakhir</option><option value="mo">Bulan ini</option></select><label style="margin-top:8px">Layout (strip / grid)</label><select id="rkl"><option value="">Semua layout</option><option>Single</option><option>Duo</option><option>Strip 3</option><option>Grid 4</option><option>Strip 4</option><option>Grid 6</option></select><div id="rko" style="margin-top:10px;font-size:15px"></div><button class="s" id="rkc" style="margin-top:8px">Salin rekap</button></div>
 <input id="q" placeholder="Cari nama atau kode order" autocapitalize="none"><h2 id="lh">Hari ini</h2><div id="ol"></div></div>
 
 <div class="pg w" id="p2"><h1>Pengaturan</h1>
@@ -68,8 +68,8 @@ nav button{flex:1;border:0;border-radius:0;background:none;padding:14px 4px;colo
 <h2>Perangkat ini</h2><label>URL Worker</label><input id="l_api" autocapitalize="none"><label>Kunci kiosk (hanya disimpan di perangkat ini)</label><input id="l_key" type="password"><label>Awalan kode order (1–5 huruf; beda untuk tiap kasir)</label><input id="l_pfx" maxlength="5" placeholder="A" autocapitalize="characters"><label>Ukuran cetak 3 dan 4 grid (cm, lebar x tinggi)</label><input id="l_cm" placeholder="5x15"><label>Ukuran cetak 6 grid (cm, lebar x tinggi)</label><input id="l_cm6" placeholder="5x15"><br><br>
 <button class="p" id="ss" style="width:100%">Simpan pengaturan</button><br><br><button id="lo" style="width:100%">Keluar</button></div>
 
-<div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak, lalu pilih ukuran kertas.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div><button class="s" id="cdel" style="display:none;width:100%;margin-top:8px">Hapus sesi tanpa kasir yang dicentang</button><button class="s" id="cclr" style="width:100%;margin-top:8px">Hapus ikon play (sesi lama) pada yang dicentang</button>
-<label>Ukuran kertas</label><select id="pm"><option value="4r">4R (10×15 cm)</option><option value="a4">A4 (susun banyak foto)</option></select><label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input id="nop" class="ck" type="checkbox" checked>Hilangkan ikon play pada cetakan sesi lama</label><div id="r4o" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center"><input id="mx" class="ck" type="checkbox" checked>Gabung sisa strip antar pelanggan (hemat kertas)</label><p style="color:var(--mut);font-size:14px;margin:6px 0 0">Strip 3 dan 4 grid: 2 per lembar 4R. Grid 6: 1 per lembar, sebesar mungkin.</p></div><div id="a4o"><label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><label>Skala foto grid 6 (lebih besar dari ukuran asli)</label><select id="s6"><option value="100">100% (ukuran asli)</option><option value="115">115%</option><option value="130">130%</option><option value="150">150%</option></select></div><br><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
+<div class="pg w" id="p3"><h1>Cetak A4</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Pilih pesanan dan jumlah cetak, lalu pilih ukuran kertas.</p><label>Tampilkan pesanan</label><select id="cr"><option value="0">Hari ini</option><option value="2">3 hari terakhir</option><option value="6">7 hari terakhir</option></select><div id="cl" style="margin-top:10px"></div><button class="s" id="cdel" style="display:none;width:100%;margin-top:8px">Hapus sesi tanpa kasir yang dicentang</button><button class="s" id="cclr" style="width:100%;margin-top:8px">Hapus ikon play (sesi lama) pada yang dicentang</button><button class="s" id="crd" style="width:100%;margin-top:8px">Desain ulang Grid 4 (7,5×10 cm) pada yang dicentang, hanya yang belum dicetak</button>
+<label>Ukuran kertas</label><select id="pm"><option value="4r">4R (10×15 cm)</option><option value="a4">A4 (susun banyak foto)</option></select><label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input id="nop" class="ck" type="checkbox" checked>Hilangkan ikon play pada cetakan sesi lama</label><div id="r4o" style="margin:10px 0"><label style="display:flex;gap:8px;align-items:center"><input id="mx" class="ck" type="checkbox" checked>Gabung sisa strip antar pelanggan (hemat kertas)</label><p style="color:var(--mut);font-size:14px;margin:6px 0 0">Strip 3 dan Strip 4: 2 per lembar 4R. Grid 4: 2 per lembar, ukuran 7,5×10 cm dan diputar horizontal (putar kertas 90° setelah dicetak). Grid 6: 1 per lembar, sebesar mungkin.</p></div><div id="a4o"><label style="display:flex;gap:8px;align-items:center"><input id="rot" class="ck" type="checkbox" checked>Boleh diputar 90° (hemat kertas)</label><label style="display:flex;gap:8px;align-items:center"><input id="gd" class="ck" type="checkbox" checked>Garis potong tipis</label><label style="display:flex;gap:8px;align-items:center"><input id="tr" class="ck" type="checkbox" checked>Pangkas ruang kosong (ikuti ukuran gambar)</label><label>Skala foto grid 6 (lebih besar dari ukuran asli)</label><select id="s6"><option value="100">100% (ukuran asli)</option><option value="115">115%</option><option value="130">130%</option><option value="150">150%</option></select></div><br><br><button class="p" id="cb" style="width:100%">Susun &amp; pratinjau</button></div>
 <div class="pg w" id="p4"><h1>Antrean AR</h1><p style="color:var(--mut);font-size:14px;margin:0 0 10px">Perangkat ini menyiapkan file pelacak (target.mind) di belakang layar, jadi kiosk tidak perlu menunggu. Biarkan aplikasi tetap terbuka.</p>
 <label style="display:flex;gap:8px;align-items:center"><input id="ao" class="ck" type="checkbox" checked>Proses otomatis</label><div id="ast" class="od" style="margin:10px 0"></div><button class="s" id="adel" style="display:none;margin-bottom:10px;width:100%">Hapus semua yang gagal</button><div id="al"></div></div>
 <nav><button data-p="0" class="on">Kasir</button><button data-p="1">Pesanan</button><button data-p="3">Cetak</button><button data-p="4">AR</button><button data-p="2">Atur</button></nav></div>
@@ -151,25 +151,32 @@ $('#edsv').onclick=()=>{const o=EO,t=Math.max(0,Math.round(+$('#edto').value||0)
  $('#edm').classList.remove('show');applyPatch(o,p)};
 
 // ===== Rekap pesanan =====
-let RKT='';
+let RKT='';const LAYC={};
+async function rkLay(L){if(!LC.api)return;let SL=[];try{SL=await sessList()}catch(e){}const mp={};SL.forEach(x=>{if(x.order_code)mp[norm(x.order_code)]=x.id});
+ const todo=L.filter(o=>!(o.code in LAYC)).slice(0,400);if(todo.length>8)toast('Memuat data layout…');let i=0;
+ await Promise.all(Array.from({length:6},async()=>{while(i<todo.length){const o=todo[i++],id=mp[norm(o.code)]||mkSid(o.code);try{const r=await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`);LAYC[o.code]=r.ok?((await r.json()).layout||''):''}catch(e){LAYC[o.code]=''}}}));
+ L.forEach(o=>o._lay=LAYC[o.code]||'')}
 function rkRange(v){const a=new Date();a.setHours(0,0,0,0);let e=null;if(v=='yd'){e=new Date(a);a.setDate(a.getDate()-1)}else if(v=='7')a.setDate(a.getDate()-6);else if(v=='30')a.setDate(a.getDate()-29);else if(v=='mo')a.setDate(1);return[a,e]}
 async function rekap(){const v=$('#rkr').value,[a,e]=rkRange(v),inR=o=>{const d=new Date(o.created_at);return d>=a&&(!e||d<e)};let L=null,off=false;
  if(sb&&navigator.onLine){try{let q=sb.from('orders').select('*').gte('created_at',a.toISOString());if(e)q=q.lt('created_at',e.toISOString());const r=await q.order('created_at',{ascending:false}).limit(3000);if(!r.error)L=r.data}catch(x){}}
  if(!L){off=true;try{L=JSON.parse(localStorage.pbt||'[]')}catch(x){L=[]}L=L.filter(inR)}
  L=[...PQ.o.filter(o=>inR(o)&&!L.some(x=>x.code==o.code)),...L].map(o=>{const c={...o};PQ.p.filter(p=>p.code==c.code).forEach(p=>Object.assign(c,p.patch));return c});
+ await rkLay(L);const LB={};L.forEach(o=>{const k=o._lay||'Tidak diketahui',b=LB[k]||(LB[k]={n:0,c:0,r:0});b.n++;b.c+=+o.prints||0;if(o.status=='lunas')b.r+=+o.total||0});
+ const fl=$('#rkl').value;if(fl)L=L.filter(o=>o._lay==fl);
  const sm=A=>A.reduce((t,o)=>t+(+o.total||0),0),ln=L.filter(o=>o.status=='lunas'),bl=L.filter(o=>o.status!='lunas'),cet=L.reduce((t,o)=>t+(+o.prints||0),0);
  const mt=[['Tunai','tunai'],['QRIS','qris'],['Transfer','transfer']].map(([n,m])=>{const A=ln.filter(o=>o.method==m);return[n,A.length,sm(A)]});
  const dy={};L.forEach(o=>{const k=new Date(o.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'});const d=dy[k]||(dy[k]={n:0,c:0,r:0});d.n++;d.c+=+o.prints||0;if(o.status=='lunas')d.r+=+o.total||0});
  const lb=$('#rkr').selectedOptions[0].textContent,T=[`Rekap ${S.usaha} · ${lb}`,`Pesanan: ${L.length} · Total cetak: ${cet}`,`Omzet lunas: ${rp(sm(ln))} (${ln.length} pesanan)`,`Belum lunas: ${rp(sm(bl))} (${bl.length} pesanan)`,...mt.map(([n,c,t])=>`${n}: ${c} pesanan · ${rp(t)}`)];
  const keys=Object.keys(dy);if(keys.length>1){T.push('Per hari:');keys.forEach(k=>T.push(`${k}: ${dy[k].n} pesanan · ${dy[k].c} cetak · ${rp(dy[k].r)}`))}
- T.push('','Daftar pesanan:',...L.map(o=>`${o.code} · ${o.nama||'-'} · ${o.prints} cetak · ${rp(o.total)}${o.status=='lunas'?'':' (belum bayar)'}`));RKT=T.join('\n');const row=(x,y)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0"><span>${x}</span><b>${y}</b></div>`;
+ T.push('','Per layout (semua pesanan di rentang ini):',...Object.keys(LB).map(k=>`${k}: ${LB[k].n} pesanan · ${LB[k].c} cetak · ${rp(LB[k].r)}`),'',fl?'Daftar pesanan ('+fl+'):':'Daftar pesanan:',...L.map(o=>`${o.code} · ${o.nama||'-'} · ${o._lay?o._lay+' · ':''}${o.prints} cetak · ${rp(o.total)}${o.status=='lunas'?'':' (belum bayar)'}`));RKT=T.join('\n');const row=(x,y)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0"><span>${x}</span><b>${y}</b></div>`;
+ const lyh='<hr style="border:0;border-top:1px dashed #ffffff44;margin:8px 0"><div style="font-weight:700;margin-bottom:2px">Per layout (semua pesanan di rentang ini)</div>'+Object.keys(LB).map(k=>row(k+' · '+LB[k].n+' pesanan · '+LB[k].c+' cetak',rp(LB[k].r))).join('');
  let SL=[];try{SL=await sessList()}catch(e){}const mp={};SL.forEach(x=>{if(x.order_code)mp[norm(x.order_code)]=x.id});
- const lst=`<div style="margin-top:12px;font-weight:700">Daftar pesanan (${L.length})</div>`+L.slice(0,150).map(o=>{const id=mp[norm(o.code)]||mkSid(o.code),u=LC.api?`${LC.api}/photobooth/pub/${id}/print.png`:'';return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #ffffff22"><div ${u?`data-z="${u}"`:''} style="position:relative;flex:0 0 52px;height:78px;border-radius:8px;overflow:hidden;background:#0004;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mut)">foto${u?`<img loading="lazy" decoding="async" src="${u}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()">`:''}</div><div style="flex:1;min-width:0"><b>${esc(o.code)}</b> · ${esc(o.nama||'-')}<div style="font-size:13px;color:var(--mut)">${o.prints} cetak · ${rp(o.total)} · ${o.status=='lunas'?'lunas':'belum bayar'}</div></div></div>`}).join('')+(L.length>150?'<div style="font-size:12px;color:var(--mut)">Menampilkan 150 pesanan terbaru. Salin rekap untuk daftar lengkap.</div>':'');
- $('#rko').innerHTML=(off?'<div class="m" style="color:var(--mut);margin-bottom:6px">Offline: data terbatas pada yang tersimpan di perangkat ini.</div>':'')+row('Pesanan',L.length)+row('Total cetak',cet)+row('Omzet lunas',rp(sm(ln)))+row('Belum lunas',rp(sm(bl))+' ('+bl.length+')')+'<hr style="border:0;border-top:1px dashed var(--line);margin:6px 0">'+mt.map(([n,c,t])=>row(n+' ('+c+')',rp(t))).join('')+(keys.length>1?'<hr style="border:0;border-top:1px dashed var(--line);margin:6px 0">'+keys.map(k=>row(k+' · '+dy[k].n+' pesanan',rp(dy[k].r))).join(''):'')+lst;
+ const lst=`<div style="margin-top:12px;font-weight:700">Daftar pesanan (${L.length})</div>`+L.slice(0,150).map(o=>{const id=mp[norm(o.code)]||mkSid(o.code),u=LC.api?`${LC.api}/photobooth/pub/${id}/print.png`:'';return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #ffffff22"><div ${u?`data-z="${u}"`:''} style="position:relative;flex:0 0 52px;height:78px;border-radius:8px;overflow:hidden;background:#0004;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mut)">foto${u?`<img loading="lazy" decoding="async" src="${u}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()">`:''}</div><div style="flex:1;min-width:0"><b>${esc(o.code)}</b> · ${esc(o.nama||'-')}<div style="font-size:13px;color:var(--mut)">${o._lay?o._lay+' · ':''}${o.prints} cetak · ${rp(o.total)} · ${o.status=='lunas'?'lunas':'belum bayar'}</div></div></div>`}).join('')+(L.length>150?'<div style="font-size:12px;color:var(--mut)">Menampilkan 150 pesanan terbaru. Salin rekap untuk daftar lengkap.</div>':'');
+ $('#rko').innerHTML=(off?'<div class="m" style="color:var(--mut);margin-bottom:6px">Offline: data terbatas pada yang tersimpan di perangkat ini.</div>':'')+row('Pesanan',L.length)+row('Total cetak',cet)+row('Omzet lunas',rp(sm(ln)))+row('Belum lunas',rp(sm(bl))+' ('+bl.length+')')+'<hr style="border:0;border-top:1px dashed var(--line);margin:6px 0">'+mt.map(([n,c,t])=>row(n+' ('+c+')',rp(t))).join('')+(keys.length>1?'<hr style="border:0;border-top:1px dashed var(--line);margin:6px 0">'+keys.map(k=>row(k+' · '+dy[k].n+' pesanan',rp(dy[k].r))).join(''):'')+lyh+lst;
  $$('#rko [data-z]').forEach(d=>d.onclick=()=>zoomImg(d.dataset.z))}
 function zoomImg(u){const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000d;z-index:99;display:flex;align-items:center;justify-content:center;padding:16px';o.innerHTML=`<img src="${u}" style="max-width:100%;max-height:100%;border-radius:12px">`;o.onclick=()=>o.remove();document.body.appendChild(o)}
 $('#rkt').onclick=()=>{const p=$('#rkp');p.style.display=p.style.display=='none'?'':'none';if(p.style.display=='')rekap()};
-$('#rkr').onchange=rekap;
+$('#rkr').onchange=rekap;$('#rkl').onchange=rekap;
 $('#rkc').onclick=async()=>{try{await navigator.clipboard.writeText(RKT);toast('Rekap disalin')}catch(e){toast('Gagal menyalin')}};
 
 // ===== Bersihkan ikon play pada sesi lama =====
@@ -231,9 +238,11 @@ function pack(its,rot){const PW=210,PH=297,M=5,G=3,pg=[];
  for(const t of its)if(!pg.some(p=>fit(p,t))){const p={it:[],sh:[],y:M};pg.push(p);if(!fit(p,t))return null}
  pg.forEach(p=>p.it.forEach(i=>{i.x+=(PW-(i.sh.x-G-M))/2-M}));return pg}
 // 4R (102x152 mm): strip = 2 per lembar, grid 6 = 1 per lembar sebesar mungkin (tanpa terpotong)
-function pack4r(its,mix){const PW=102,PH=152,pg=[],fit=(a,bw,bh)=>a>bw/bh?{w:bw,h:bw/a}:{w:bh*a,h:bh};let cur=null;
+function pack4r(its,mix){const PW=102,PH=152,pg=[],fit=(a,bw,bh)=>a>bw/bh?{w:bw,h:bw/a}:{w:bh*a,h:bh};let cur=null,cur4=null;
  its=its.slice().sort((a,b)=>a.ord-b.ord);
  for(const t of its){const a=t.asp||t.w/t.h;
+  if(t.g4){const f=fit(a,75,100);let half=0;if(cur4&&cur4.it.length==1&&(mix||cur4.it[0].oid===t.oid))half=1;else{cur4={it:[]};pg.push(cur4)}
+   cur4.it.push({...t,x:(PW-f.h)/2,y:half*PH/2+(PH/2-f.w)/2,w:f.h,h:f.w,r:1});continue}
   if(t.six){const f=fit(a,PW,PH);pg.push({it:[{...t,x:(PW-f.w)/2,y:(PH-f.h)/2,w:f.w,h:f.h,r:0}]});continue}
   const f=fit(a,PW/2,PH);let half=0;
   if(cur&&cur.it.length==1&&(mix||cur.it[0].oid===t.oid))half=1;else{cur={it:[]};pg.push(cur)}
@@ -243,7 +252,7 @@ const sheetHtml=(pg,gd)=>pg.map(p=>`<div class="A4" style="width:${PGW}mm;height
 $('#cr').onchange=loadC;const pmUp=()=>{const a=$('#pm').value=='a4';$('#a4o').style.display=a?'':'none';$('#r4o').style.display=a?'none':''};$('#pm').value=LC.pm||'4r';pmUp();$('#pm').onchange=()=>{LC.pm=$('#pm').value;localStorage.pbl=JSON.stringify(LC);pmUp()};$('#s6').value=LC.s6||'100';$('#s6').onchange=()=>{LC.s6=$('#s6').value;localStorage.pbl=JSON.stringify(LC)};
 const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 let SC=null;
-const sessList=async()=>{if(SC&&Date.now()-SC.t<20000)return SC.d;const {data,error}=await sb.from('pb_sessions').select('id,order_code').order('created_at',{ascending:false}).limit(400);if(!error&&data)SC={t:Date.now(),d:data};return data||[]};
+const sessList=async()=>{if(SC&&Date.now()-SC.t<20000)return SC.d;const {data,error}=await sb.from('pb_sessions').select('id,order_code,created_at').order('created_at',{ascending:false}).limit(400);if(!error&&data)SC={t:Date.now(),d:data};return data||[]};
 const mkSid=n=>String(n||'').trim().toUpperCase().replace(/[^A-Za-z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);
 const sessOf=async code=>{const n=norm(code);if(!n)return null;const f=(await sessList()).find(x=>norm(x.order_code)==n);if(f)return f;
  const c=mkSid(code);if(c&&LC.api)try{const r=await fetch(`${LC.api}/photobooth/pub/${c}/manifest.json`);if(r.ok)return{id:c,order_code:code}}catch(e){}return null};
@@ -261,6 +270,62 @@ async function cleanBadge0(id,M,src){if(CLN[id])return CLN[id];
     x.save();x.beginPath();x.arc(px+cw-34*k,py+34*k,24*k,0,7);x.clip();x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,cw,ch);x.restore();im.close();n++}catch(e){}}));
   if(!n)return src;
   pr.close();const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',.95));cv.width=cv.height=0;return CLN[id]=URL.createObjectURL(b)}catch(e){return src}}
+
+// ===== Desain ulang Grid 4 jadi 7,5x10 cm (hanya sesi yang belum dicetak) =====
+const G4T={"Pink Manis":{"bg":"#fff1f5","accent":"#e0457b","text":"#5a2a3a","font":"Georgia, serif","stick":"💖✨","radius":18,"border":6,"gap":24,"title":"Happy Moments"},"Retro Film":{"bg":"#111111","accent":"#f5c542","text":"#ffffff","font":"'Courier New', monospace","stick":"🎞️","radius":0,"border":8,"gap":20,"title":"FILM NIGHT"},"Minimal":{"bg":"#ffffff","accent":"#111111","text":"#111111","font":"system-ui, sans-serif","stick":"","radius":4,"border":3,"gap":18,"title":"Photobooth"},"Biru Pastel":{"bg":"#e8f3ff","accent":"#4a8fe7","text":"#1f3b63","font":"'Trebuchet MS', sans-serif","stick":"☁️⭐","radius":26,"border":6,"gap":24,"title":"Sweet Day"},"Hijau Sage":{"bg":"#eef3e6","accent":"#6b8f4e","text":"#34472a","font":"Georgia, serif","stick":"🌿🌼","radius":20,"border":5,"gap":22,"title":"Garden Party"},"Hitam Emas":{"bg":"#16130d","accent":"#d4af37","text":"#f3e6b8","font":"Georgia, serif","stick":"⭐✨","radius":10,"border":6,"gap":22,"title":"Golden Night"}};
+const rdQrLoad=()=>window.qrcode?Promise.resolve():new Promise((a,b)=>{const e=document.createElement('script');e.src='https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';e.onload=a;e.onerror=()=>b(new Error('pustaka QR gagal dimuat'));document.head.appendChild(e)});
+const rdQr=u=>{const a=qrcode(0,'M');a.addData(u);a.make();const b=qrcode(0,'L');b.addData(u);b.make();return b.getModuleCount()<a.getModuleCount()?b:a};
+const rdCover=(x,im,px,py,w,h)=>{const iw=im.naturalWidth,ih=im.naturalHeight,sc=Math.max(w/iw,h/ih),sw=w/sc,sh=h/sc;x.drawImage(im,(iw-sw)/2,(ih-sh)/2,sw,sh,px,py,w,h)};
+async function rdRender(id,o){
+ const B=`${LC.api}/photobooth/pub/${id}`,m=await (await fetch(B+'/manifest.json?c='+Date.now())).json();
+ if(m.layout!='Grid 4')return{skip:'bukan Grid 4'};
+ if(m.rv&&m.print&&Math.abs(m.print.aspect-.75)<.01)return{skip:'sudah didesain ulang'};
+ const T0=G4T[m.template]||G4T['Pink Manis'],T={...T0,accent:m.accent||T0.accent,title:m.ttl||T0.title};
+ const imgs=[];for(let i=0;i<4;i++){const q=m.slots&&m.slots[i];if(q&&q.photo){try{imgs[i]=await imgL(`${B}/foto-${i+1}.jpg`)}catch(e){throw new Error('foto '+(i+1)+' gagal dimuat')}}}
+ const ss=(await sessList()).find(z=>z.id==id),d=ss&&ss.created_at?new Date(ss.created_at):new Date(),sub=d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+ await rdQrLoad();
+ const W=1200,H=1600,pad=48,hd=118,c=2,cw=(W-2*pad-(c-1)*T.gap)/c,ch=cw/1.15,gh=2*ch+T.gap,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+ x.fillStyle=T.bg;x.fillRect(0,0,W,H);x.textAlign='center';x.fillStyle=T.text;
+ x.font=`bold 56px ${T.font}`;x.fillText(T.title,W/2,pad+52,W-2*pad-180);x.font=`30px ${T.font}`;x.fillText(sub,W/2,pad+98,W-2*pad);
+ if(T.stick){x.font='54px serif';x.fillText(T.stick,pad+50,pad+50);x.fillText(T.stick,W-pad-50,pad+50)}
+ const top=pad+hd,rects=[];
+ for(let i=0;i<4;i++){const px=pad+(i%c)*(cw+T.gap),py=top+Math.floor(i/c)*(ch+T.gap);rects.push([px,py,cw,ch]);
+  x.save();x.beginPath();x.roundRect(px,py,cw,ch,T.radius);x.clip();x.fillStyle='#0002';x.fillRect(px,py,cw,ch);if(imgs[i])rdCover(x,imgs[i],px,py,cw,ch);x.restore();
+  x.strokeStyle=T.accent;x.lineWidth=T.border;x.beginPath();x.roundRect(px,py,cw,ch,T.radius);x.stroke()}
+ const fy=top+gh+30,q=260,qx=(W-q-40)/2;x.fillStyle='#fff';x.beginPath();x.roundRect(qx,fy,q+40,q+40,20);x.fill();x.strokeStyle=T.accent;x.lineWidth=5;x.stroke();
+ const url=m.qr_url||'';if(!url)throw new Error('alamat QR tidak ada di data sesi');
+ {const qq=rdQr(url),n=qq.getModuleCount(),mm=q/n;x.fillStyle='#000';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(qq.isDark(r,k))x.fillRect(qx+20+k*mm,fy+20+r*mm,Math.ceil(mm),Math.ceil(mm))}
+ x.fillStyle=T.text;x.font=`28px ${T.font}`;x.fillText('Scan QR & arahkan kamera ke foto',W/2,fy+q+82);x.fillText('untuk melihat video BTS ✨',W/2,fy+q+118);
+ const m2={...m,print:{w:W,h:H,aspect:+(W/H).toFixed(5),cm:null},border:T.border||0,nb:1,rv:Date.now(),
+  slots:rects.map((r,i)=>{const q0=(m.slots&&m.slots[i])||{};return{slot:i+1,x:+(r[0]/W).toFixed(5),y:+(r[1]/H).toFixed(5),w:+(r[2]/W).toFixed(5),h:+(r[3]/H).toFixed(5),ar:+(r[2]/r[3]).toFixed(4),photo:!!q0.photo,video:!!q0.video,video_crop:q0.video_crop||'cell'}})};
+ return{cv,m2,code:(o&&o.code)||(ss&&ss.order_code)||id}}
+const rdAsk=(url,n)=>new Promise(res=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000e;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px';
+ o.innerHTML=`<div style="color:#fff;text-align:center;font-size:14px">Contoh desain baru (sesi pertama).<br>Terapkan ke ${n} sesi? Gambar cetak dan file AR sesi itu akan diganti.</div><img src="${url}" style="max-height:62vh;max-width:100%;border-radius:10px"><div style="display:flex;gap:10px;width:100%;max-width:400px"><button class="s" style="flex:1" id="rdn">Batal</button><button class="p" style="flex:1" id="rdy">Terapkan</button></div>`;
+ document.body.appendChild(o);o.querySelector('#rdn').onclick=()=>{o.remove();res(false)};o.querySelector('#rdy').onclick=()=>{o.remove();res(true)}});
+$('#crd').onclick=async()=>{if(!(LC.api&&LC.key))return toast('Isi URL Worker dan Kunci kiosk di tab Atur');if(!navigator.onLine)return toast('Butuh internet');
+ const all=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>CO.find(x=>x.id==c.dataset.i)).filter(Boolean);if(!all.length)return toast('Centang sesi yang mau didesain ulang');
+ const sel=all.filter(o=>!o.printed),sp=all.length-sel.length;if(!sel.length)return toast('Semua yang dicentang sudah dicetak, jadi dilewati');
+ try{toast('Menyiapkan contoh desain…');const todo=[];
+  for(const o of sel){const ss=o.sid?{id:o.sid}:await sessOf(o.code),id=ss&&ss.id;if(id)todo.push({o,id})}
+  if(!todo.length)return toast('Sesi tidak ditemukan');
+  let first=null,fi=0;for(;fi<todo.length;fi++){const r=await rdRender(todo[fi].id,todo[fi].o);if(!r.skip){first=r;break}}
+  if(!first)return toast('Tidak ada sesi Grid 4 yang perlu didesain ulang');
+  const pv=document.createElement('canvas');pv.width=600;pv.height=800;pv.getContext('2d').drawImage(first.cv,0,0,600,800);
+  const n=todo.slice(fi).length;if(!(await rdAsk(pv.toDataURL('image/jpeg',.85),n)))return;
+  let ok=0,sk=sp;const er=[];
+  for(let i=fi;i<todo.length;i++){const {o,id}=todo[i];
+   try{toast(`Mendesain ulang ${o.code} (${i-fi+1}/${n})…`);const r=i==fi?first:await rdRender(id,o);if(r.skip){sk++;continue}
+    const W=r.cv.width,H=r.cv.height,k=Math.min(1,1000/Math.max(W,H)),t=document.createElement('canvas');t.width=Math.round(W*k);t.height=Math.round(H*k);t.getContext('2d').drawImage(r.cv,0,0,t.width,t.height);
+    const pb=await cvBlob(r.cv,'image/png'),tb=await cvBlob(t,'image/jpeg',.9);
+    let x=await wApi('/photobooth/session','POST',JSON.stringify({id,nama:r.code,manifest:r.m2}));if(!x.ok)throw new Error('perbarui data sesi '+x.status);
+    x=await wApi(`/photobooth/file/${id}/print.png`,'PUT',pb,'image/png');if(!x.ok)throw new Error('unggah gambar cetak '+x.status);
+    x=await wApi(`/photobooth/file/${id}/target.jpg`,'PUT',tb,'image/jpeg');if(!x.ok)throw new Error('unggah target '+x.status);
+    x=await fin(id,'pending');if(!x.ok)throw new Error('antre AR '+x.status);
+    delete CLN[id];ok++}
+   catch(e){console.error(e);er.push(o.code+' ('+(e.message||e)+')');break}}
+  toast(`Selesai: ${ok} didesain ulang, ${sk} dilewati`+(er.length?'. Berhenti di '+er.join(', '):'. File AR diproses di tab AR, biarkan aplikasi terbuka.'));loadC();arTick()}
+ catch(e){console.error(e);toast('Gagal: '+(e.message||e))}};
+
 async function savePdf(){try{toast('Membuat PDF…');await loadJs('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
  const doc=new window.jspdf.jsPDF({unit:'mm',format:[PGW,PGH],orientation:'portrait',compress:true}),K=11.811,imgs={},cache={};
  const load=u=>imgs[u]||(imgs[u]=new Promise((a,b)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>a(im);im.onerror=()=>b(new Error('gambar gagal dimuat'));im.src=u.startsWith('blob:')?u:u+(u.includes('?')?'&':'?')+'c=1'}));
@@ -276,11 +341,12 @@ async function cbRun(){if(!LC.api)return toast('Isi URL Worker di tab Atur');
  const sel=[...$$('#cl [data-i]')].filter(c=>c.checked).map(c=>({o:CO.find(x=>x.id==c.dataset.i),n:Math.max(1,+$(`#cl [data-n="${c.dataset.i}"]`).value||1)}));if(!sel.length)return toast('Pilih pesanan dulu');
  toast('Menyusun…');const f6=(+$('#s6').value||100)/100;const its=[],skip=[],def=cmP(LC.cm)||[5,15],d6=cmP(LC.cm6)||def;
  await Promise.all(sel.map(async({o,n},oi)=>{const ss=o.sid?{id:o.sid}:await sessOf(o.code),id=ss&&ss.id;if(!id)return skip.push(o.code);
-  let cm=def,A=0,six=false,M=null;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json`)).json();M=m;cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0;six=!!(m.slots&&m.slots.length>=6)}catch(e){}
+  let cm=def,A=0,six=false,M=null;try{const m=await (await fetch(`${LC.api}/photobooth/pub/${id}/manifest.json?c=${Date.now()}`)).json();M=m;cm=(m.print&&m.print.cm)||(m.slots&&m.slots.length>=6?d6:def);A=(m.print&&(m.print.aspect||m.print.w/m.print.h))||0;six=!!(m.slots&&m.slots.length>=6)}catch(e){}
   let w=cm[0]*10,h=cm[1]*10;if(A&&$('#tr').checked){if(A>w/h)h=w/A;else w=h*A;w=Math.round(w*10)/10;h=Math.round(h*10)/10}
   if(six&&f6!=1){w=Math.round(w*f6*10)/10;h=Math.round(h*f6*10)/10}
-  let src=`${LC.api}/photobooth/pub/${id}/print.png`;if($('#nop').checked&&M&&!M.nb&&!CLR.has(id)&&!(M.print&&M.print.cm))src=await cleanBadge(id,M,src);
-  for(let k=0;k<n;k++)its.push({w,h,asp:A||w/h,six,ord:oi,src,oid:o.id})}));
+  let src=`${LC.api}/photobooth/pub/${id}/print.png${M&&M.rv?'?v='+M.rv:''}`;if($('#nop').checked&&M&&!M.nb&&!CLR.has(id)&&!(M.print&&M.print.cm))src=await cleanBadge(id,M,src);
+  const g4=!six&&!!(M&&M.layout=='Grid 4');if(g4){const a=A||.75,f=a>.75?{w:75,h:75/a}:{w:100*a,h:100};w=Math.round(f.w*10)/10;h=Math.round(f.h*10)/10}
+  for(let k=0;k<n;k++)its.push({w,h,asp:A||w/h,six,g4,ord:oi,src,oid:o.id})}));
  if(!its.length)return toast('Foto belum masuk dari kiosk: '+skip.join(', '));
  const m4=$('#pm').value=='4r';PGW=m4?102:210;PGH=m4?152:297;$('#sheet').className=m4?'r4':'';
  const pg=m4?pack4r(its,$('#mx').checked):pack(its,$('#rot').checked);if(!pg)return toast('Ukuran foto melebihi kertas');
